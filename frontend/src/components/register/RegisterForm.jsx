@@ -49,9 +49,20 @@ const RegisterForm = () => {
 
       if (data.success && data.token) {
         const userRole = data.role || 'user'
+        
+        // Guardar token primero en localStorage directamente
+        localStorage.setItem('token', data.token)
+        localStorage.setItem('userRole', userRole)
+        
+        // Luego actualizar el contexto
         login(data.token, userRole)
+        
         toast.success('Registration successful!')
-        navigate('/registerPet')
+        
+        // Pequeño delay para asegurar que el contexto se actualice
+        setTimeout(() => {
+          navigate('/registerPet')
+        }, 100)
       } else {
         toast.error(data.message || 'Registration failed')
       }

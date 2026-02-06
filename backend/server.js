@@ -5,6 +5,7 @@ import connectDB from './config/mongodb.js';
 import sensorsRouter from './routes/sensorRoute.js';
 import authRouter from './routes/authRouter.js';
 import userRouter from './routes/userRouter.js';
+import petRouter from './routes/petRouter.js';
 
 //App config
 const app = express();
@@ -18,6 +19,7 @@ app.use(cors());
 app.use('/api/sensors',sensorsRouter)
 app.use('/api/auth',authRouter)
 app.use('/api/users',userRouter)
+app.use('/api/pets',petRouter)
 
 app.get('/', (req, res) => {
     res.send('API WORKING');

@@ -7,6 +7,8 @@ import {
   Plus,
 } from "lucide-react"
 import { useNavigate, useLocation } from "react-router-dom"
+import { useContext, useEffect, useState } from "react"
+import { AuthContext } from "../../context/AuthContext"
 
 const Sidebar = () => {
   const navigate = useNavigate()
@@ -31,19 +33,13 @@ const Sidebar = () => {
             onClick={() => navigate('/feedingSchedule')}
           />
           <NavItem 
-            icon={History} 
-            label="Nutrition Logs"
-            active={location.pathname === '/nutrition'}
-            onClick={() => navigate('/nutrition')}
-          />
-          <NavItem 
             icon={Settings} 
             label="Device Settings"
             active={location.pathname === '/settings'}
             onClick={() => navigate('/settings')}
           />
 
-          <ActivePet />
+          <ActivePet navigate={navigate} />
         </nav>
 
         <button onClick={() => navigate('/registerPet')} className="w-full flex items-center justify-center gap-2 rounded-xl py-3 bg-white border font-bold hover:bg-slate-100">
@@ -81,26 +77,85 @@ const NavItem = ({ icon: Icon, label, active, onClick }) => (
   </div>
 )
 
-const ActivePet = () => (
-  <>
-    <p className="mt-8 mb-2 px-4 text-[10px] uppercase font-bold text-slate-400">
-      Active Pets
-    </p>
-    <div className="flex items-center gap-3 px-4 py-2 bg-white border rounded-xl shadow-sm">
-      <div
-        className="h-8 w-8 rounded-full bg-cover"
-        style={{
-          backgroundImage:
-            "url('https://lh3.googleusercontent.com/aida-public/AB6AXuC90WdJ1NGH8GJs-mWNk_RitMtqa0_60v_TPb6WeuaoJwKqyrEttApjAPCLdh_wx6aQuIx8txY7F9GaLzmb0BVMmd7tkP2mfOD0SlAQ46xn8WSEDDyGcN8J5wmUko4OrVw744lSgdyPYPe1X5dahBcTUB900jQZqU4IFjxwjIdT_mv4rnMtNlFKY-On8k07mdOyb68-9iA00ZF3NZ6DE84qw-dXGLA6oi0PxW-6OEcyLR6qu-W97FZPFhYrODSZUoDOpbUsFfDAlWyl')",
-        }}
-      />
-      <div className="flex-1 min-w-0">
-        <p className="text-xs font-bold truncate">Max</p>
-        <p className="text-[10px] text-slate-500">Golden Retriever</p>
+const ActivePet = ({ navigate }) => {
+  const { token } = useContext(AuthContext)
+  const [activePet, setActivePet] = useState(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchActivePet = async () => {
+      try {
+        if (!token) {
+          setLoading(false)
+          return
+        }
+
+        // Decodificar el token para obtener el userId
+        const base64Url = token.split('.')[1]
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/')
+        const jsonPayload = decodeURIComponent(
+          atob(base64)
+            .split('')
+            .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+            .join('')
+        )
+        const { id: userId } = JSON.parse(jsonPayload)
+
+        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000'
+        const response = await fetch(`${apiBaseUrl}/api/pets/active/${userId}`)
+        const data = await response.json()
+
+        if (data.success) {
+          setActivePet(data.pet)
+        }
+      } catch (error) {
+        console.error('Error fetching active pet:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchActivePet()
+  }, [token])
+
+  if (loading || !activePet) {
+    return (
+      <div className="mt-8">
+        <p className="mb-2 px-4 text-[10px] uppercase font-bold text-slate-400">
+          Active Pets
+        </p>
+        <div className="px-4 py-3 text-sm text-slate-500">
+          No active pet
+        </div>
       </div>
-      <div className="h-2 w-2 bg-emerald-500 rounded-full" />
-    </div>
-  </>
-)
+    )
+  }
+
+  return (
+    <>
+      <p className="mt-8 mb-2 px-4 text-[10px] uppercase font-bold text-slate-400">
+        Active Pets
+      </p>
+      <div 
+        onClick={() => navigate('/pet-profile')}
+        className="flex items-center gap-3 px-4 py-2 bg-white border rounded-xl shadow-sm cursor-pointer hover:shadow-md transition-shadow"
+      >
+        <div
+          className="h-8 w-8 rounded-full bg-cover"
+          style={{
+            backgroundImage: activePet.profileImage 
+              ? `url('${activePet.profileImage}')`
+              : "url('https://via.placeholder.com/32?text=' + activePet.name[0])"
+          }}
+        />
+        <div className="flex-1 min-w-0">
+          <p className="text-xs font-bold truncate">{activePet.name}</p>
+          <p className="text-[10px] text-slate-500">{activePet.breed}</p>
+        </div>
+        <div className="h-2 w-2 bg-emerald-500 rounded-full" />
+      </div>
+    </>
+  )
+}
 
 export default Sidebar

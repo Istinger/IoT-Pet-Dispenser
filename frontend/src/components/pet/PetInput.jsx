@@ -18,6 +18,9 @@ const PetInput = ({
   min,
   max,
   step,
+  value,
+  onChange,
+  name,
 }) => {
   const Icon = icon ? iconMap[icon] : null
 
@@ -37,13 +40,16 @@ const PetInput = ({
 
         <input
           type={type}
+          name={name}
+          value={value}
+          onChange={onChange}
           min={min}
           max={max}
           step={step}
           placeholder={placeholder}
           onKeyDown={(e) => {
-            // bloquea signo negativo
-            if (e.key === "-" || e.key === "e") {
+            // bloquea signo negativo y notación científica solo en campos numéricos
+            if (type === "number" && (e.key === "-" || e.key === "e")) {
               e.preventDefault()
             }
           }}
