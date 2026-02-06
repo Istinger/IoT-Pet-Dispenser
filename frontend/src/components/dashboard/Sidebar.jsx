@@ -40,7 +40,7 @@ const Sidebar = () => {
             />
             <NavItem 
               icon={Heart} 
-              label="Health"
+              label="Pets"
               active={location.pathname === '/petProfile'}
               onClick={() => navigate('/petProfile')}
             />
