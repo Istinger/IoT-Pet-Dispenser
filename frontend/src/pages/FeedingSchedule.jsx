@@ -1,6 +1,7 @@
 import { LogOut } from "lucide-react"
 import { useContext, useEffect, useMemo, useState } from "react"
 import { useNavigate } from "react-router-dom"
+import { toast } from "react-toastify"
 import Sidebar from "../components/layout/Sidebar"
 import FeedingSummary from "../components/feeding/FeedingSummary"
 import InstantFeed from "../components/feeding/InstantFeed"
@@ -58,6 +59,7 @@ const FeedingSchedulePage = () => {
   const [petId, setPetId] = useState("")
   const [loading, setLoading] = useState(true)
   const [savingId, setSavingId] = useState("")
+  const [deletingId, setDeletingId] = useState("")
   const [instantGrams, setInstantGrams] = useState(100)
   const [instantLoading, setInstantLoading] = useState(false)
   const [error, setError] = useState("")
@@ -224,6 +226,67 @@ const FeedingSchedulePage = () => {
     }
   }
 
+  const handleDeleteSchedule = async (schedule, index) => {
+    if (!schedule?._id) return
+    try {
+      setDeletingId(schedule._id || schedule.key || String(index))
+      const response = await fetch(`${apiBaseUrl}/api/schedules/${schedule._id}`, {
+        method: "DELETE",
+      })
+
+      const result = await response.json()
+      if (!response.ok || !result.success) {
+        setError(result.message || "No se pudo eliminar el horario.")
+        return
+      }
+
+      setSchedules(defaultScheduleSlots.map((slot) => ({ ...slot })))
+      toast.success("Horario eliminado")
+    } catch (err) {
+      console.error("Failed to delete schedule", err)
+      setError("No se pudo eliminar el horario.")
+    } finally {
+      setDeletingId("")
+    }
+  }
+
+  const confirmDeleteSchedule = (schedule, index) => {
+    if (!schedule?._id) return
+    toast(
+      ({ closeToast }) => (
+        <div className="space-y-3">
+          <p className="text-sm font-semibold text-slate-900">Eliminar horario?</p>
+          <p className="text-xs text-slate-500">
+            Se eliminara este horario de forma permanente.
+          </p>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                closeToast()
+                handleDeleteSchedule(schedule, index)
+              }}
+              className="px-3 py-1.5 text-xs font-bold uppercase tracking-wide rounded-md bg-rose-600 text-white hover:bg-rose-700"
+            >
+              Eliminar
+            </button>
+            <button
+              type="button"
+              onClick={closeToast}
+              className="px-3 py-1.5 text-xs font-bold uppercase tracking-wide rounded-md border border-slate-200 text-slate-600 hover:bg-slate-50"
+            >
+              Cancelar
+            </button>
+          </div>
+        </div>
+      ),
+      {
+        autoClose: false,
+        closeOnClick: false,
+      }
+    )
+  }
+
   const displaySchedules = loading || schedules.length === 0 ? defaultScheduleSlots : schedules
   
   return (
@@ -289,6 +352,9 @@ const FeedingSchedulePage = () => {
                 onPortionChange={(value) => updateScheduleField(index, "portionGrams", value)}
                 onSave={() => handleSaveSchedule(schedule, index)}
                 isSaving={savingId === (schedule._id || schedule.key || String(index))}
+                onDelete={() => confirmDeleteSchedule(schedule, index)}
+                canDelete={Boolean(schedule._id)}
+                isDeleting={deletingId === (schedule._id || schedule.key || String(index))}
               />
             ))}
           </div>

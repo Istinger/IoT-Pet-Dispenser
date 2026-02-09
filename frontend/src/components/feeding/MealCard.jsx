@@ -1,4 +1,4 @@
-import { Sun, Moon, Clock, Repeat, Info } from "lucide-react"
+import { Sun, Moon, Clock, Repeat, Info, Trash2 } from "lucide-react"
 
 const iconMap = {
   sun: Sun,
@@ -25,6 +25,9 @@ const MealCard = ({
   onPortionChange,
   onSave,
   isSaving,
+  onDelete,
+  canDelete,
+  isDeleting,
 }) => {
   const Icon = iconMap[icon]
   const tone = colorMap[color] || colorMap.blue
@@ -45,6 +48,17 @@ const MealCard = ({
           <span className={`text-sm font-bold ${isActive ? "text-emerald-600" : "text-slate-400"}`}>
             {isActive ? "Active" : "Paused"}
           </span>
+          <button
+            onClick={onDelete}
+            disabled={!canDelete || isDeleting}
+            className="text-xs font-bold uppercase tracking-wide text-rose-600 hover:text-rose-800 disabled:opacity-40"
+            title={canDelete ? "Eliminar" : "Guarda el horario para habilitar eliminar"}
+          >
+            <span className="inline-flex items-center gap-1">
+              <Trash2 size={14} />
+              {isDeleting ? "Deleting" : "Delete"}
+            </span>
+          </button>
           <button
             onClick={onSave}
             disabled={isSaving}
