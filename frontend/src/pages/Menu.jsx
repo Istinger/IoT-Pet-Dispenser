@@ -7,8 +7,12 @@ import QuickFeedCard from "../components/dashboard/QuickFeedCard"
 import Sidebar from "../components/dashboard/Sidebar"
 import Topbar from "../components/dashboard/Topbar"
 
+const HOPPER_CAPACITY_GRAMS = 5000
+const SERVING_GRAMS = 50
+
 const Menu= () => {
   const [logs, setLogs] = useState([])
+  const [latestSensor, setLatestSensor] = useState(null)
 
   useEffect(() => {
     const fetchSensorData = async () => {
@@ -22,30 +26,38 @@ const Menu= () => {
           return
         }
 
-        const formatted = payload.data.slice(0, 5).map((item) => {
-          const humidityValue = typeof item.humidity === "number" ? item.humidity : null
-          const statusLabel = humidityValue === null
-            ? "Unknown"
-            : humidityValue < 20
-              ? "Critical"
-              : humidityValue < 40
-                ? "Warning"
-                : "OK"
+        const sorted = payload.data
+        const latest = sorted.length > 0 ? sorted[0] : null
+        setLatestSensor(latest)
 
-          const statusTone = humidityValue === null
+        const formatted = sorted.slice(0, 5).map((item) => {
+          const foodValue = typeof item.weightFood === "number" ? item.weightFood : null
+          const percent = foodValue === null
+            ? null
+            : Math.min(100, Math.max(0, (foodValue / HOPPER_CAPACITY_GRAMS) * 100))
+
+          const statusLabel = percent === null
+            ? "Unknown"
+            : item.dispensing
+              ? "Dispensing"
+              : percent < 20
+                ? "Low Hopper"
+                : "Idle"
+
+          const statusTone = percent === null
             ? "text-slate-500"
-            : humidityValue < 20
-              ? "text-rose-600"
-              : humidityValue < 40
-                ? "text-amber-600"
-                : "text-emerald-600"
+            : item.dispensing
+              ? "text-blue-600"
+              : percent < 20
+                ? "text-rose-600"
+                : "text-slate-500"
 
           return {
             id: item._id,
             device: item.deviceId,
             time: new Date(item.createdAt).toLocaleString(),
-            temperature: typeof item.temperature === "number" ? `${item.temperature}°C` : "--",
-            humidity: typeof item.humidity === "number" ? `${item.humidity}%` : "--",
+            foodWeight: foodValue !== null ? `${foodValue.toFixed(0)} g` : "--",
+            animalWeight: typeof item.weightAnimal === "number" ? `${item.weightAnimal.toFixed(1)} kg` : "--",
             statusLabel,
             statusTone,
           }
@@ -55,6 +67,7 @@ const Menu= () => {
       } catch (error) {
         console.error("Failed to fetch sensor data", error)
         setLogs([])
+        setLatestSensor(null)
       }
     }
 
@@ -72,9 +85,17 @@ const Menu= () => {
           <AlertBanner />
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <HopperCard />
-            <NextFeedCard />
-            <QuickFeedCard />
+            <HopperCard
+              capacityGrams={HOPPER_CAPACITY_GRAMS}
+              servingGrams={SERVING_GRAMS}
+              weightFood={latestSensor?.weightFood}
+            />
+            <NextFeedCard
+              dispensing={latestSensor?.dispensing}
+              portionTarget={latestSensor?.portionTarget}
+              portionDelivered={latestSensor?.portionDelivered}
+            />
+            <QuickFeedCard portionTarget={latestSensor?.portionTarget} />
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

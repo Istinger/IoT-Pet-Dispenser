@@ -10,6 +10,7 @@ import FooterStatus from "../components/FooterStatus"
 
 const AdminPerformance = () => {
   const [sensors, setSensors] = useState([])
+  const hopperCapacity = 5000
 
   useEffect(() => {
     const fetchSensors = async () => {
@@ -34,31 +35,46 @@ const AdminPerformance = () => {
   }, [])
 
   const stats = useMemo(() => {
-    const temps = sensors.map((item) => item.temperature).filter((value) => typeof value === "number")
-    const humidity = sensors.map((item) => item.humidity).filter((value) => typeof value === "number")
+    const animalWeights = sensors.map((item) => item.weightAnimal).filter((value) => typeof value === "number")
+    const foodWeights = sensors.map((item) => item.weightFood).filter((value) => typeof value === "number")
 
-    const avgTemp = temps.length
-      ? (temps.reduce((sum, value) => sum + value, 0) / temps.length).toFixed(1)
+    const avgAnimal = animalWeights.length
+      ? (animalWeights.reduce((sum, value) => sum + value, 0) / animalWeights.length).toFixed(1)
       : null
-    const avgHumidity = humidity.length
-      ? (humidity.reduce((sum, value) => sum + value, 0) / humidity.length).toFixed(1)
+    const avgFood = foodWeights.length
+      ? (foodWeights.reduce((sum, value) => sum + value, 0) / foodWeights.length).toFixed(0)
       : null
 
-    const optimalCount = humidity.filter((value) => value >= 40).length
-    const successPercent = humidity.length
-      ? Math.round((optimalCount / humidity.length) * 100)
+    const dispenseEvents = sensors.filter((item) => typeof item.portionTarget === "number" && item.portionTarget > 0)
+    const successfulDispenses = dispenseEvents.filter((item) => {
+      if (typeof item.portionDelivered !== "number") return false
+      return item.portionDelivered / item.portionTarget >= 0.9
+    })
+    const successPercent = dispenseEvents.length
+      ? Math.round((successfulDispenses.length / dispenseEvents.length) * 100)
       : 0
 
-    const tempPoints = temps.slice(0, 12).map((value) => Math.min(100, Math.max(0, (value / 50) * 100)))
+    const tempPoints = foodWeights
+      .slice(0, 12)
+      .map((value) => Math.min(100, Math.max(0, (value / hopperCapacity) * 100)))
 
-    const buckets = ["Excellent", "Good", "Fair", "Poor"]
-    const bucketCounts = { Excellent: 0, Good: 0, Fair: 0, Poor: 0 }
-    humidity.forEach((value) => {
-      if (value >= 60) bucketCounts.Excellent += 1
-      else if (value >= 40) bucketCounts.Good += 1
-      else if (value >= 20) bucketCounts.Fair += 1
-      else bucketCounts.Poor += 1
+    const buckets = ["Accurate", "Slight Low", "Low", "No Target"]
+    const bucketCounts = { Accurate: 0, "Slight Low": 0, Low: 0, "No Target": 0 }
+    sensors.forEach((item) => {
+      if (typeof item.portionTarget !== "number" || item.portionTarget <= 0) {
+        bucketCounts["No Target"] += 1
+        return
+      }
+      if (typeof item.portionDelivered !== "number" || item.portionDelivered <= 0) {
+        bucketCounts.Low += 1
+        return
+      }
+      const ratio = item.portionDelivered / item.portionTarget
+      if (ratio >= 0.9) bucketCounts.Accurate += 1
+      else if (ratio >= 0.7) bucketCounts["Slight Low"] += 1
+      else bucketCounts.Low += 1
     })
+
     const maxBucket = Math.max(1, ...Object.values(bucketCounts))
     const barData = buckets.map((label) => ({
       label,
@@ -66,8 +82,8 @@ const AdminPerformance = () => {
     }))
 
     return {
-      avgTemp,
-      avgHumidity,
+      avgAnimal,
+      avgFood,
       totalReadings: sensors.length,
       successPercent,
       tempPoints,
@@ -90,14 +106,14 @@ const AdminPerformance = () => {
       {/* STATS */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <StatCard
-          title="Avg Temperature"
-          value={stats.avgTemp ? `${stats.avgTemp}°C` : "--"}
+          title="Avg Animal Weight"
+          value={stats.avgAnimal ? `${stats.avgAnimal} kg` : "--"}
           footer={`Based on ${stats.totalReadings} readings`}
           icon="timer"
         />
         <StatCard
-          title="Avg Humidity"
-          value={stats.avgHumidity ? `${stats.avgHumidity}%` : "--"}
+          title="Avg Hopper Weight"
+          value={stats.avgFood ? `${stats.avgFood} g` : "--"}
           footer={`Based on ${stats.totalReadings} readings`}
           icon="cloud-check"
         />
@@ -113,8 +129,8 @@ const AdminPerformance = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         <div className="card">
           <SectionHeader
-            title="Command Latency Trends"
-            subtitle="Response times over 24 hours"
+            title="Hopper Level Trend"
+            subtitle="Remaining food per sample"
             icon="zap"
           />
           <LineChart points={stats.tempPoints} />
@@ -122,8 +138,8 @@ const AdminPerformance = () => {
 
         <div className="card">
           <SectionHeader
-            title="Wi-Fi Signal Strength (RSSI)"
-            subtitle="Fleet signal quality distribution"
+            title="Dispense Accuracy"
+            subtitle="Portion delivered vs target"
             icon="wifi"
           />
           <BarChart bars={stats.barData} />
@@ -133,8 +149,8 @@ const AdminPerformance = () => {
       {/* FIRMWARE */}
       <div className="card">
         <SectionHeader
-          title="Firmware Update Success Rate"
-          subtitle="Latest deployment: v2.4.0"
+          title="Successful Dispenses"
+          subtitle="Ratio of accurate deliveries"
           icon="download-cloud"
         />
         <DoughnutChart percent={stats.successPercent} />

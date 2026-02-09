@@ -16,8 +16,8 @@ const StatDoughnutCard = ({
             <span className="material-symbols-outlined">humidity_low</span>
           </div>
           <div>
-            <h3 className="font-bold text-slate-900">Sensor Health Summary</h3>
-            <p className="text-xs text-slate-400">Relative Humidity Monitoring</p>
+            <h3 className="font-bold text-slate-900">Hopper Health Summary</h3>
+            <p className="text-xs text-slate-400">Food capacity status by device</p>
           </div>
         </div>
         <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Real-time</span>
@@ -72,7 +72,7 @@ const StatDoughnutCard = ({
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
             <span className="text-3xl font-black text-slate-900">{optimalPercent}%</span>
-            <span className="text-[10px] font-bold uppercase text-slate-400 tracking-tight">Optimal</span>
+            <span className="text-[10px] font-bold uppercase text-slate-400 tracking-tight">Healthy</span>
           </div>
         </div>
 
@@ -80,7 +80,7 @@ const StatDoughnutCard = ({
           <div className="flex items-center justify-between gap-8 rounded-lg border border-slate-50 p-3 hover:bg-slate-50 transition-colors">
             <div className="flex items-center gap-3">
               <div className="h-3 w-3 rounded-full bg-emerald-500" />
-              <span className="text-sm font-medium text-slate-600">Optimal Range</span>
+              <span className="text-sm font-medium text-slate-600">Healthy Level</span>
             </div>
             <span className="text-sm font-bold text-slate-900">{optimalCount} Units</span>
           </div>
@@ -88,7 +88,7 @@ const StatDoughnutCard = ({
           <div className="flex items-center justify-between gap-8 rounded-lg border border-slate-50 p-3 hover:bg-slate-50 transition-colors">
             <div className="flex items-center gap-3">
               <div className="h-3 w-3 rounded-full bg-amber-400" />
-              <span className="text-sm font-medium text-slate-600">Moderate Warning</span>
+              <span className="text-sm font-medium text-slate-600">Low Warning</span>
             </div>
             <span className="text-sm font-bold text-slate-900">{warningCount} Units</span>
           </div>
@@ -96,7 +96,7 @@ const StatDoughnutCard = ({
           <div className="flex items-center justify-between gap-8 rounded-lg border border-slate-50 p-3 hover:bg-slate-50 transition-colors">
             <div className="flex items-center gap-3">
               <div className="h-3 w-3 rounded-full bg-rose-500" />
-              <span className="text-sm font-medium text-slate-600">Critical Fault</span>
+              <span className="text-sm font-medium text-slate-600">Critical Low</span>
             </div>
             <span className="text-sm font-bold text-slate-900">{criticalCount} Units</span>
           </div>

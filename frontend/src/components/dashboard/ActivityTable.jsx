@@ -11,8 +11,8 @@ const ActivityTable = ({ logs }) => {
           <tr>
             <th className="px-6 py-4">Device</th>
             <th className="px-6 py-4">Time</th>
-            <th className="px-6 py-4">Temp</th>
-            <th className="px-6 py-4">Humidity</th>
+            <th className="px-6 py-4">Food</th>
+            <th className="px-6 py-4">Animal</th>
             <th className="px-6 py-4 text-right">Status</th>
           </tr>
         </thead>
@@ -28,8 +28,8 @@ const ActivityTable = ({ logs }) => {
               <tr key={log.id} className="hover:bg-slate-50">
                 <td className="px-6 py-4 font-bold">{log.device}</td>
                 <td className="px-6 py-4 text-xs text-slate-500">{log.time}</td>
-                <td className="px-6 py-4 text-xs font-semibold">{log.temperature}</td>
-                <td className="px-6 py-4 text-xs font-semibold">{log.humidity}</td>
+                <td className="px-6 py-4 text-xs font-semibold">{log.foodWeight}</td>
+                <td className="px-6 py-4 text-xs font-semibold">{log.animalWeight}</td>
                 <td className={`px-6 py-4 text-right text-xs font-bold ${log.statusTone}`}>
                   {log.statusLabel}
                 </td>

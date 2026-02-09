@@ -26,7 +26,7 @@ const AdminLogs = () => {
 
   const handleExport = (format) => {
     if (format === "excel") {
-      const header = ["Timestamp", "Device", "Temperature", "Humidity", "Status"]
+      const header = ["Timestamp", "Device", "Animal Weight", "Food Weight", "Status"]
       const rows = filteredLogs.map((log) => [
         log.time.replace(" • ", " "),
         log.device,
@@ -52,7 +52,7 @@ const AdminLogs = () => {
     doc.setFontSize(11)
 
     const lines = [
-      "Timestamp | Device | Temperature | Humidity | Status",
+      "Timestamp | Device | Animal Weight | Food Weight | Status",
       ...filteredLogs.map((log) =>
         `${log.time.replace(" • ", " ")} | ${log.device} | ${log.temperature} | ${log.humidity} | ${log.status}`
       ),
@@ -111,17 +111,19 @@ const AdminLogs = () => {
         const payload = await response.json()
 
         if (!response.ok || !payload.success) {
-          setLogs([])
+          setAllLogs([])
+          setFilteredLogs([])
           return
         }
 
         const formatted = payload.data.map((item) => {
-          const humidityValue = typeof item.humidity === "number" ? item.humidity : null
-          const status = humidityValue === null
-            ? "unknown"
-            : humidityValue < 20
+          const foodValue = typeof item.weightFood === "number" ? item.weightFood : null
+          const percent = foodValue === null ? null : (foodValue / 5000) * 100
+          const status = percent === null
+            ? "warning"
+            : percent < 20
               ? "critical"
-              : humidityValue < 40
+              : percent < 40
                 ? "warning"
                 : "online"
 
@@ -130,8 +132,8 @@ const AdminLogs = () => {
             createdAt: item.createdAt,
             time: new Date(item.createdAt).toLocaleString(),
             device: item.deviceId,
-            temperature: typeof item.temperature === "number" ? `${item.temperature}°C` : "--",
-            humidity: typeof item.humidity === "number" ? `${item.humidity}%` : "--",
+            temperature: typeof item.weightAnimal === "number" ? `${item.weightAnimal.toFixed(1)} kg` : "--",
+            humidity: foodValue !== null ? `${foodValue.toFixed(0)} g` : "--",
             status,
           }
         })

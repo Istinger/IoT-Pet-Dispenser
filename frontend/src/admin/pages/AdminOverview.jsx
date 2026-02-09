@@ -6,6 +6,7 @@ import PeakHoursCard from "../components/PeakHoursCard"
 
 const AdminOverview = () => {
   const [sensors, setSensors] = useState([])
+  const hopperCapacity = 5000
 
   useEffect(() => {
     const fetchSensors = async () => {
@@ -35,12 +36,13 @@ const AdminOverview = () => {
     let critical = 0
 
     sensors.forEach((item) => {
-      if (typeof item.humidity !== "number") {
+      if (typeof item.weightFood !== "number") {
         return
       }
-      if (item.humidity < 20) {
+      const percent = (item.weightFood / hopperCapacity) * 100
+      if (percent < 20) {
         critical += 1
-      } else if (item.humidity < 40) {
+      } else if (percent < 40) {
         warning += 1
       } else {
         optimal += 1
@@ -58,6 +60,10 @@ const AdminOverview = () => {
     }, {})
 
     sensors.forEach((item) => {
+      const hasDispense = item.dispensing === true
+        || (typeof item.portionDelivered === "number" && item.portionDelivered > 0)
+      if (!hasDispense) return
+
       const timestamp = new Date(item.createdAt)
       const hour = timestamp.getHours()
       if (counts[hour] !== undefined) {

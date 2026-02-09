@@ -10,8 +10,8 @@ const LogsTable = ({ logs }) => {
           <tr>
             <th className="th">Timestamp</th>
             <th className="th">Device</th>
-            <th className="th">Temperature</th>
-            <th className="th">Humidity</th>
+            <th className="th">Animal Weight</th>
+            <th className="th">Food Weight</th>
             <th className="th">Status</th>
           </tr>
         </thead>
