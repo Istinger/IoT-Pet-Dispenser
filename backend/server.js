@@ -6,6 +6,7 @@ import sensorsRouter from './routes/sensorRoute.js';
 import authRouter from './routes/authRouter.js';
 import userRouter from './routes/userRouter.js';
 import petRouter from './routes/petRouter.js';
+import scheduleRouter from './routes/scheduleRoute.js';
 
 //App config
 const app = express();
@@ -20,6 +21,7 @@ app.use('/api/sensors',sensorsRouter)
 app.use('/api/auth',authRouter)
 app.use('/api/users',userRouter)
 app.use('/api/pets',petRouter)
+app.use('/api/schedules',scheduleRouter)
 
 app.get('/', (req, res) => {
     res.send('API WORKING');

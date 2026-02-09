@@ -1,22 +1,231 @@
-
-import { Sun, Moon, LogOut } from "lucide-react"
-import { useContext } from "react"
+import { LogOut } from "lucide-react"
+import { useContext, useEffect, useMemo, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import Sidebar from "../components/layout/Sidebar"
-import FeedingSummary from "../components/feeding/feedingSummary"
+import FeedingSummary from "../components/feeding/FeedingSummary"
 import InstantFeed from "../components/feeding/InstantFeed"
 import MealCard from "../components/feeding/MealCard"
 import { AuthContext } from "../context/AuthContext"
 
+const decodeToken = (token) => {
+  try {
+    const base64Url = token.split(".")[1]
+    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/")
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split("")
+        .map((c) => `%${("00" + c.charCodeAt(0).toString(16)).slice(-2)}`)
+        .join("")
+    )
+    return JSON.parse(jsonPayload)
+  } catch (error) {
+    console.error("Error decoding token:", error)
+    return null
+  }
+}
+
+const defaultScheduleSlots = [
+  {
+    key: "breakfast",
+    title: "Breakfast",
+    icon: "sun",
+    color: "amber",
+    time: "07:30",
+    portionGrams: 350,
+    min: 50,
+    max: 600,
+    days: ["mon", "tue", "wed", "thu", "fri", "sat", "sun"],
+  },
+  {
+    key: "dinner",
+    title: "Dinner",
+    icon: "moon",
+    color: "indigo",
+    time: "19:00",
+    portionGrams: 600,
+    min: 50,
+    max: 800,
+    days: ["mon", "tue", "wed", "thu", "fri", "sat", "sun"],
+  },
+]
+
 const FeedingSchedulePage = () => {
   const { logout } = useContext(AuthContext)
   const navigate = useNavigate()
+  const { token } = useContext(AuthContext)
+  const [schedules, setSchedules] = useState([])
+  const [userId, setUserId] = useState("")
+  const [petId, setPetId] = useState("")
+  const [loading, setLoading] = useState(true)
+  const [savingId, setSavingId] = useState("")
+  const [instantGrams, setInstantGrams] = useState(100)
+  const [instantLoading, setInstantLoading] = useState(false)
+  const [error, setError] = useState("")
+  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:4000"
+  const deviceId = import.meta.env.VITE_DEVICE_ID || "petfeeder-01"
+  const dailyTargetGrams = Number(import.meta.env.VITE_DAILY_TARGET_GRAMS) || 1250
 
   const handleLogout = () => {
-    logout()
-    navigate('/login')
+    if (logout) {
+      logout()
+    }
+    navigate("/login")
   }
 
+  useEffect(() => {
+    const loadSchedules = async () => {
+      try {
+        setLoading(true)
+        const currentToken = token || localStorage.getItem("token")
+        if (!currentToken) {
+          setError("No hay sesion activa.")
+          return
+        }
+
+        const decoded = decodeToken(currentToken)
+        if (!decoded?.id) {
+          setError("No se pudo obtener el usuario.")
+          return
+        }
+
+        setUserId(decoded.id)
+
+        const petResponse = await fetch(`${apiBaseUrl}/api/pets/active/${decoded.id}`)
+        const petPayload = await petResponse.json()
+
+        if (!petResponse.ok || !petPayload.success) {
+          setError("No se encontro mascota activa.")
+          setSchedules(defaultScheduleSlots)
+          return
+        }
+
+        setPetId(petPayload.pet._id)
+
+        const scheduleResponse = await fetch(`${apiBaseUrl}/api/schedules/pet/${petPayload.pet._id}`)
+        const schedulePayload = await scheduleResponse.json()
+
+        if (!scheduleResponse.ok || !schedulePayload.success) {
+          setSchedules(defaultScheduleSlots)
+          return
+        }
+
+        const mapped = schedulePayload.schedules.map((schedule, index) => ({
+          ...schedule,
+          key: schedule._id || `schedule-${index}`,
+          title: index === 0 ? "Breakfast" : index === 1 ? "Dinner" : `Meal ${index + 1}`,
+          icon: index === 0 ? "sun" : index === 1 ? "moon" : "sun",
+          color: index === 0 ? "amber" : index === 1 ? "indigo" : "blue",
+          min: 50,
+          max: 800,
+        }))
+
+        setSchedules(mapped.length > 0 ? mapped : defaultScheduleSlots)
+      } catch (err) {
+        console.error("Failed to load schedules", err)
+        setSchedules(defaultScheduleSlots)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadSchedules()
+  }, [token, apiBaseUrl])
+
+  const scheduledGrams = useMemo(() => {
+    return schedules.reduce((sum, schedule) => {
+      if (schedule.isActive === false) return sum
+      const portion = typeof schedule.portionGrams === "number" ? schedule.portionGrams : Number(schedule.portionGrams)
+      return Number.isFinite(portion) ? sum + portion : sum
+    }, 0)
+  }, [schedules])
+
+  const remainingGrams = Math.max(0, dailyTargetGrams - scheduledGrams)
+
+  const updateScheduleField = (index, field, value) => {
+    setSchedules((prev) =>
+      prev.map((item, idx) => (idx === index ? { ...item, [field]: value } : item))
+    )
+  }
+
+  const handleSaveSchedule = async (schedule, index) => {
+    try {
+      if (!userId || !petId) return
+      setSavingId(schedule._id || schedule.key || String(index))
+
+      const payload = {
+        userId,
+        petId,
+        deviceId,
+        time: schedule.time,
+        days: schedule.days || ["mon", "tue", "wed", "thu", "fri", "sat", "sun"],
+        portionGrams: schedule.portionGrams,
+        isActive: schedule.isActive !== false,
+      }
+
+      const response = await fetch(
+        schedule._id
+          ? `${apiBaseUrl}/api/schedules/${schedule._id}`
+          : `${apiBaseUrl}/api/schedules`,
+        {
+          method: schedule._id ? "PUT" : "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        }
+      )
+
+      const result = await response.json()
+      if (!response.ok || !result.success) {
+        setError(result.message || "No se pudo guardar el horario.")
+        return
+      }
+
+      const saved = result.schedule
+      setSchedules((prev) =>
+        prev.map((item, idx) => (idx === index ? { ...item, ...saved } : item))
+      )
+    } catch (err) {
+      console.error("Failed to save schedule", err)
+      setError("No se pudo guardar el horario.")
+    } finally {
+      setSavingId("")
+    }
+  }
+
+  const handleInstantFeed = async () => {
+    try {
+      if (!userId || !petId) return
+      const grams = Number(instantGrams)
+      if (!Number.isFinite(grams) || grams <= 0) {
+        setError("La porcion debe ser mayor a 0.")
+        return
+      }
+
+      setInstantLoading(true)
+      const response = await fetch(`${apiBaseUrl}/api/schedules/instant`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId,
+          petId,
+          deviceId,
+          portionGrams: grams,
+        }),
+      })
+
+      const result = await response.json()
+      if (!response.ok || !result.success) {
+        setError(result.message || "No se pudo enviar la porcion.")
+      }
+    } catch (err) {
+      console.error("Failed to send instant feed", err)
+      setError("No se pudo enviar la porcion.")
+    } finally {
+      setInstantLoading(false)
+    }
+  }
+
+  const displaySchedules = loading || schedules.length === 0 ? defaultScheduleSlots : schedules
+  
   return (
     <div className="flex h-screen overflow-hidden bg-white">
       <Sidebar />
@@ -45,12 +254,43 @@ const FeedingSchedulePage = () => {
             </button>
           </header>
 
-          <FeedingSummary />
-          <InstantFeed />
+          {error && (
+            <div className="bg-rose-50 border border-rose-200 text-rose-600 rounded-xl p-4 text-sm">
+              {error}
+            </div>
+          )}
+
+          <FeedingSummary
+            dailyTargetGrams={dailyTargetGrams}
+            scheduledGrams={scheduledGrams}
+            remainingGrams={remainingGrams}
+          />
+          <InstantFeed
+            value={instantGrams}
+            onValueChange={setInstantGrams}
+            onFeedNow={handleInstantFeed}
+            isLoading={instantLoading}
+          />
 
           <div className="grid xl:grid-cols-2 gap-8">
-            <MealCard title="Breakfast" icon={Sun} time="07:30" portion={350} />
-            <MealCard title="Dinner" icon={Moon} time="19:00" portion={600} />
+            {displaySchedules.map((schedule, index) => (
+              <MealCard
+                key={schedule._id || schedule.key}
+                title={schedule.title}
+                icon={schedule.icon}
+                color={schedule.color}
+                time={schedule.time}
+                portion={schedule.portionGrams}
+                min={schedule.min}
+                max={schedule.max}
+                days={(schedule.days || []).map((day) => day.slice(0, 1).toUpperCase())}
+                isActive={schedule.isActive !== false}
+                onTimeChange={(value) => updateScheduleField(index, "time", value)}
+                onPortionChange={(value) => updateScheduleField(index, "portionGrams", value)}
+                onSave={() => handleSaveSchedule(schedule, index)}
+                isSaving={savingId === (schedule._id || schedule.key || String(index))}
+              />
+            ))}
           </div>
         </div>
       </main>

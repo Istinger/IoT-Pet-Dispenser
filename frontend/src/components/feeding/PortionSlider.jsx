@@ -1,4 +1,4 @@
-const PortionSlider = ({ value }) => {
+const PortionSlider = ({ value, onChange, min = 50, max = 600, step = 10 }) => {
   return (
     <div className="space-y-4">
       <div className="flex justify-between text-[10px] font-bold uppercase text-slate-500">
@@ -9,10 +9,11 @@ const PortionSlider = ({ value }) => {
 
       <input
         type="range"
-        min="50"
-        max="600"
-        step="10"
-        defaultValue={value}
+        min={min}
+        max={max}
+        step={step}
+        value={value}
+        onChange={(event) => onChange(Number(event.target.value))}
         className="w-full h-2 bg-slate-200 rounded-lg accent-blue-600"
       />
     </div>
