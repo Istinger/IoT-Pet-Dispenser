@@ -1,9 +1,7 @@
 import { useNavigate } from "react-router-dom"
 import { useContext, useEffect, useState } from "react"
-import InsightsSection from "../components/petProfile/InsightsSection"
-import PetHeader from "../components/petProfile/petHeader"
+import PetHeader from "../components/petProfile/PetHeader"
 import PetProfileCard from "../components/petProfile/PetProfileCard"
-import PetStats from "../components/petProfile/PetStats"
 import { AuthContext } from "../context/AuthContext"
 
 const decodeToken = (token) => {
@@ -359,7 +357,7 @@ const PetProfile = () => {
       <main className="max-w-[1200px] mx-auto px-6 py-8">
         <div className="flex justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-black">Perfil de mascotas</h1>
+            <h1 className="text-3xl font-black">Perfil de Mascotas</h1>
             <p className="text-slate-500 font-medium">
               Revisa y edita la informacion de tus mascotas registradas.
             </p>
