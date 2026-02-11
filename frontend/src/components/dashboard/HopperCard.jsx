@@ -5,11 +5,11 @@ const HopperCard = ({ capacityGrams = 5000, servingGrams = 50, weightFood }) => 
   const percent = grams === null ? 0 : Math.min(100, (grams / capacityGrams) * 100)
   const servingsLeft = grams === null ? 0 : Math.max(0, Math.floor(grams / servingGrams))
   const label = grams === null
-    ? "Unknown"
+    ? "Desconocido"
     : percent < 20
-      ? "Critical"
+      ? "Critico"
       : percent < 40
-        ? "Warning"
+        ? "Advertencia"
         : "OK"
   const barTone = percent < 20 ? "bg-rose-500" : percent < 40 ? "bg-amber-500" : "bg-blue-500"
   const textTone = percent < 20 ? "text-rose-500" : percent < 40 ? "text-amber-500" : "text-blue-500"
@@ -19,7 +19,7 @@ const HopperCard = ({ capacityGrams = 5000, servingGrams = 50, weightFood }) => 
       <div className="space-y-4">
         <div>
           <h3 className="text-xs uppercase font-bold text-slate-400">
-            Hopper Level
+            Nivel de comida
           </h3>
           <div className="flex items-baseline gap-2">
             <span className="text-4xl font-extrabold">{Math.round(percent)}%</span>

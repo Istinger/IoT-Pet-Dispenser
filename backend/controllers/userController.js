@@ -227,5 +227,45 @@ const deleteUser = async (req, res) => {
     }
 }
 
+const changePassword = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { currentPassword, newPassword } = req.body;
 
-export { loginUser, registerUser, loginAdmin, listUsers, getUser, updateUser, patchUser, deleteUser };
+        if (!currentPassword || !newPassword) {
+            return res.json({
+                success: false,
+                message: "currentPassword and newPassword are required"
+            });
+        }
+
+        const user = await userModel.findById(id);
+        if (!user) {
+            return res.json({ success: false, message: "User not found" });
+        }
+
+        const isMatch = await bcrypt.compare(currentPassword, user.password);
+        if (!isMatch) {
+            return res.json({ success: false, message: "Current password is incorrect" });
+        }
+
+        const passwordRegex = /^(?=.*[a-zA-Z])(?=.*\d).{6,}$/;
+        if (!passwordRegex.test(newPassword)) {
+            return res.json({
+                success: false,
+                message: "Password must have at least 6 characters, including letters and numbers"
+            });
+        }
+
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+        await userModel.findByIdAndUpdate(id, { password: hashedPassword });
+        res.json({ success: true, message: "Password updated successfully" });
+    } catch (error) {
+        console.log(error);
+        res.json({ success: false, message: error.message });
+    }
+}
+
+export { loginUser, registerUser, loginAdmin, listUsers, getUser, updateUser, patchUser, deleteUser, changePassword };

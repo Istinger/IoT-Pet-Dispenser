@@ -23,7 +23,8 @@ const LoginForm = () => {
     "live.com",
     "aol.com",
     "zoho.com",
-    "gmx.com"
+    "gmx.com",
+    "snackbox.com"
   ]
 
   const isValidEmailDomain = (value) => {
@@ -40,7 +41,7 @@ const LoginForm = () => {
     e.preventDefault()
 
     if (!isValidEmailDomain(email)) {
-      toast.error("Usa un correo con dominio comun (ej. gmail.com, hotmail.com, outlook.com).")
+      toast.error("Usa un correo valido")
       return
     }
 
@@ -61,7 +62,7 @@ const LoginForm = () => {
       if (data.success && data.token) {
         const userRole = data.role || 'user'
         login(data.token, userRole)
-        toast.success('Login successful!')
+        toast.success('Acesso exitoso')
         
         // Redirigir según el rol
         if (userRole === 'admin') {
@@ -70,11 +71,11 @@ const LoginForm = () => {
           navigate('/menu')
         }
       } else {
-        toast.error(data.message || 'Login failed')
+        toast.error(data.message || 'Error de inicio de sesión')
       }
     } catch (error) {
       console.error('Login error:', error)
-      toast.error('Network error. Please try again.')
+      toast.error('Error de red. Por favor, inténtalo de nuevo.')
     } finally {
       setLoading(false)
     }
@@ -85,35 +86,35 @@ const LoginForm = () => {
       <div className="w-full max-w-md">
 
         <h1 className="mb-3 text-3xl font-extrabold">
-          Welcome back
+          Bienvenido de nuevo
         </h1>
         <p className="mb-10 text-slate-500">
-          Manage your pet's nutrition with precision.
+          Gestiona la nutrición de tu mascota con precisión.
         </p>
 
         <form className="space-y-6" onSubmit={handleLogin}>
           <LoginInput 
-            label="Email address" 
+            label="Correo electrónico" 
             type="email" 
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="your@email.com"
+            placeholder="tu@correo.com"
           />
           <LoginInput 
-            label="Password" 
+            label="Contraseña" 
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="Enter your password"
+            placeholder="Ingresa tu contraseña"
           />
 
           <div className="flex items-center justify-between">
             <label className="flex items-center gap-2 text-sm text-slate-600">
               <input type="checkbox" className="h-4 w-4 text-blue-600" />
-              Remember me
+              Recuérdame
             </label>
             <a className="text-sm font-bold text-blue-600">
-              Forgot password?
+              ¿Olvidaste tu contraseña?
             </a>
           </div>
 
@@ -122,14 +123,14 @@ const LoginForm = () => {
             disabled={loading}
             className="w-full rounded-lg bg-blue-600 py-4 font-bold text-white hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? 'Logging in...' : 'Log In'}
+            {loading ? 'Iniciando sesión...' : 'Iniciar sesión'}
           </button>
         </form>
 
         <LoginDivider />
 
         <button onClick={() => navigate('/register')} className="mt-6 w-full rounded-lg border border-slate-200 py-3.5 font-bold hover:bg-slate-50">
-          Create an account
+          Crear una cuenta
         </button>
       </div>
     </div>

@@ -1,8 +1,10 @@
-const NotificationItem = ({ icon: Icon, title, text, enabled }) => {
+const NotificationItem = ({ icon: Icon, title, text, read, onMarkRead }) => {
   return (
     <div className="flex justify-between p-6 border-b hover:bg-slate-50">
       <div className="flex gap-4">
-        <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-slate-100">
+        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${
+          read ? "bg-slate-100" : "bg-blue-50 text-blue-600"
+        }`}>
           <Icon className="h-6 w-6" />
         </div>
         <div>
@@ -11,10 +13,18 @@ const NotificationItem = ({ icon: Icon, title, text, enabled }) => {
         </div>
       </div>
 
-      <label className="relative inline-flex cursor-pointer">
-        <input defaultChecked={enabled} type="checkbox" className="sr-only peer" />
-        <div className="w-12 h-6 bg-slate-200 rounded-full peer-checked:bg-blue-600 after:absolute after:top-[4px] after:left-[4px] after:h-4 after:w-4 after:bg-white after:rounded-full after:transition-all peer-checked:after:translate-x-full" />
-      </label>
+      <button
+        type="button"
+        onClick={onMarkRead}
+        disabled={read}
+        className={`text-xs font-bold uppercase px-3 py-2 rounded-full border ${
+          read
+            ? "text-slate-400 border-slate-200"
+            : "text-blue-600 border-blue-200 hover:bg-blue-50"
+        }`}
+      >
+        {read ? "Leida" : "Marcar"}
+      </button>
     </div>
   )
 }

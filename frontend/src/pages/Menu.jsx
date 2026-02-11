@@ -84,7 +84,7 @@ const Menu= () => {
         <div className="p-8 max-w-7xl mx-auto w-full space-y-8">
           <AlertBanner />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <HopperCard
               capacityGrams={HOPPER_CAPACITY_GRAMS}
               servingGrams={SERVING_GRAMS}
@@ -95,7 +95,6 @@ const Menu= () => {
               portionTarget={latestSensor?.portionTarget}
               portionDelivered={latestSensor?.portionDelivered}
             />
-            <QuickFeedCard portionTarget={latestSensor?.portionTarget} />
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

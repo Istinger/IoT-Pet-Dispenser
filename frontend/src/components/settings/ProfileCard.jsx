@@ -1,6 +1,65 @@
+import { useContext, useEffect, useState } from "react"
 import { Camera, User, Mail } from "lucide-react"
+import { AuthContext } from "../../context/AuthContext"
+
+const decodeToken = (token) => {
+  try {
+    const base64Url = token.split(".")[1]
+    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/")
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split("")
+        .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+        .join("")
+    )
+    return JSON.parse(jsonPayload)
+  } catch (error) {
+    console.error("Error decoding token:", error)
+    return null
+  }
+}
 
 const ProfileCard = () => {
+  const { token } = useContext(AuthContext)
+  const [user, setUser] = useState(null)
+  const [error, setError] = useState("")
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      setError("")
+      const currentToken = token || localStorage.getItem("token")
+      if (!currentToken) {
+        setError("No hay sesion activa.")
+        return
+      }
+
+      const decoded = decodeToken(currentToken)
+      if (!decoded || !decoded.id) {
+        setError("No se pudo obtener el usuario.")
+        return
+      }
+
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:4000"
+
+      try {
+        const response = await fetch(`${apiBaseUrl}/api/users/${decoded.id}`)
+        const data = await response.json()
+
+        if (!response.ok || !data.success) {
+          setError(data.message || "No se pudo cargar el usuario.")
+          return
+        }
+
+        setUser(data.user)
+      } catch (fetchError) {
+        console.error("Error fetching user:", fetchError)
+        setError("Error al conectar con el servidor.")
+      }
+    }
+
+    fetchUser()
+  }, [token])
+
   return (
     <div className="bg-white p-8 rounded-2xl shadow-sm border">
       <div className="flex items-center gap-6 mb-8">
@@ -15,17 +74,24 @@ const ProfileCard = () => {
         </div>
 
         <div>
-          <h3 className="font-bold text-lg">Alex Johnson</h3>
+          <h3 className="font-bold text-lg">{user?.name || "-"}</h3>
           <p className="text-sm text-slate-500">Premium Plan Member</p>
         </div>
       </div>
 
-      <Input label="Full Name" icon={User} defaultValue="Alex Johnson" />
+      {error && (
+        <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-600">
+          {error}
+        </div>
+      )}
+
+      <Input label="Full Name" icon={User} value={user?.name || ""} readOnly />
       <Input
         label="Email Address"
         icon={Mail}
-        defaultValue="alex.johnson@petfeeder.pro"
+        value={user?.email || ""}
         type="email"
+        readOnly
       />
     </div>
   )

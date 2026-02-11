@@ -18,12 +18,6 @@ const Topbar = () => {
 
       <div className="flex items-center gap-4">
 
-
-        <button className="relative p-2 rounded-lg hover:bg-slate-50">
-          <Bell className="h-5 w-5 text-slate-400" />
-          <span className="absolute top-2 right-2 h-1.5 w-1.5 bg-red-500 rounded-full" />
-        </button>
-
         <button 
           onClick={handleLogout}
           className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-red-50 text-slate-600 hover:text-red-600 transition-colors"

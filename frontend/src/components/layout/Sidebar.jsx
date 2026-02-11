@@ -58,7 +58,6 @@ const Brand = ({ onClick }) => (
     </div>
     <div>
       <h1 className="font-bold">SnackBox</h1>
-      <p className="text-xs text-slate-500">Large Breed Edition</p>
     </div>
   </div>
 )

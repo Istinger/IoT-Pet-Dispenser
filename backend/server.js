@@ -9,6 +9,7 @@ import authRouter from './routes/authRouter.js';
 import userRouter from './routes/userRouter.js';
 import petRouter from './routes/petRouter.js';
 import scheduleRouter from './routes/scheduleRoute.js';
+import notificationRouter from './routes/notificationRoute.js';
 import connectCloudinary from './config/cloudinary.js';
 
 //App config
@@ -30,6 +31,7 @@ app.use('/api/auth',authRouter)
 app.use('/api/users',userRouter)
 app.use('/api/pets',petRouter)
 app.use('/api/schedules',scheduleRouter)
+app.use('/api/notifications',notificationRouter)
 
 app.get('/', (req, res) => {
     res.send('API WORKING');

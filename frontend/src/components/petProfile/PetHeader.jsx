@@ -36,13 +36,7 @@ const PetHeader = () => {
       </div>
 
       <div className="flex items-center gap-6">
-        <div className="hidden lg:flex items-center bg-slate-50 rounded-full px-4 py-2 border">
-          <Search className="h-4 w-4 text-slate-400" />
-          <input
-            className="bg-transparent border-none focus:ring-0 text-sm w-48 placeholder:text-slate-400 ml-2"
-            placeholder="Search profiles..."
-          />
-        </div>
+
 
         <IconButton icon={LogOut} onClick={handleLogout} className="text-red-500 hover:bg-red-50" />
 

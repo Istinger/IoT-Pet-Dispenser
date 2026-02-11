@@ -359,18 +359,18 @@ const PetProfile = () => {
       <main className="max-w-[1200px] mx-auto px-6 py-8">
         <div className="flex justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-black">Pet Profiles</h1>
+            <h1 className="text-3xl font-black">Perfil de mascotas</h1>
             <p className="text-slate-500 font-medium">
-              Manage health metrics and feeding goals.
+              Revisa y edita la informacion de tus mascotas registradas.
             </p>
           </div>
 
           <button onClick={() => navigate('/registerPet')} className="h-12 px-6 bg-blue-600 text-white rounded-xl font-bold shadow-lg hover:bg-blue-700">
-            + Add New Pet
+            + Agregar mascota
           </button>
         </div>
 
-        <PetStats />
+     
 
         {error && (
           <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
@@ -511,7 +511,7 @@ const PetProfile = () => {
           </div>
         )}
 
-        <InsightsSection />
+    
       </main>
     </div>
   )

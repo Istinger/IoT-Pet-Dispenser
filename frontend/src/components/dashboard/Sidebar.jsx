@@ -53,19 +53,7 @@ const Sidebar = () => {
           </nav>
         </div>
 
-        <div className="flex items-center gap-3 p-3 bg-white border rounded-xl shadow-sm">
-          <div
-            className="h-10 w-10 rounded-full bg-cover"
-            style={{
-              backgroundImage:
-                "url('https://lh3.googleusercontent.com/aida-public/AB6AXuCcvBxr9H4NM5oBKgmm121GMwoYYku3AcLKYfF9OIJIQfeGPZoc07BXlDGecKDTfmM-ErcJJYQuwcAm_FxCCo5ctd1xuCQUi0ftSrx-d4o5Rg_TG52KRSavmpdxPSWTNk1SrINNq--I7mDnqgIoRAykTW9tjb3bGvOuWuin_DnUViR35YoejSmnSwV6LIuRYZIZ2KAntWs8Zl7LiN9EbOaEJ7ONWYV30fKmiDXG3JYuC81YiF2Iw3K0JP7CNiWPP-9o7Sl4j_SwYGBd')",
-            }}
-          />
-          <div>
-            <p className="font-bold text-sm">Cooper</p>
-            <p className="text-xs text-slate-400">Labrador</p>
-          </div>
-        </div>
+
       </div>
     </aside>
   )
