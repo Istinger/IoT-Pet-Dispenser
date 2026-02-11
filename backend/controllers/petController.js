@@ -1,5 +1,7 @@
 import petModel from "../models/petModel.js";
 import userModel from "../models/userModel.js";
+import { cloudinary } from "../config/cloudinary.js";
+import fs from "fs";
 
 // Crear una nueva mascota
 const createPet = async (req, res) => {
@@ -209,6 +211,122 @@ const updatePet = async (req, res) => {
   }
 };
 
+// Actualizar perfil (foto, nombre, peso)
+const updatePetProfile = async (req, res) => {
+  try {
+    const { petId } = req.params;
+    const { name, weight, profileImage } = req.body;
+
+    if (!petId) {
+      return res.json({
+        success: false,
+        message: "petId is required"
+      });
+    }
+
+    if (name === undefined && weight === undefined && profileImage === undefined) {
+      return res.json({
+        success: false,
+        message: "name, weight, or profileImage is required"
+      });
+    }
+
+    const existingPet = await petModel.findById(petId);
+    if (!existingPet) {
+      return res.json({
+        success: false,
+        message: "Pet not found"
+      });
+    }
+
+    const updateData = {};
+    if (name !== undefined) updateData.name = name;
+    if (weight !== undefined) updateData.weight = weight;
+    if (profileImage !== undefined) updateData.profileImage = profileImage;
+    updateData.updatedAt = new Date();
+
+    const updatedPet = await petModel.findByIdAndUpdate(petId, updateData, { new: true });
+
+    if (name !== undefined && name !== existingPet.name) {
+      await userModel.findByIdAndUpdate(
+        existingPet.userId,
+        { $pull: { petNames: existingPet.name } },
+        { new: true }
+      );
+
+      await userModel.findByIdAndUpdate(
+        existingPet.userId,
+        { $addToSet: { petNames: name } },
+        { new: true }
+      );
+    }
+
+    res.json({
+      success: true,
+      message: "Pet profile updated successfully",
+      pet: updatedPet
+    });
+  } catch (error) {
+    console.log(error);
+    res.json({ success: false, message: error.message });
+  }
+};
+
+// Actualizar foto de perfil
+const updatePetProfileImage = async (req, res) => {
+  try {
+    const { petId } = req.params;
+
+    if (!petId) {
+      return res.json({
+        success: false,
+        message: "petId is required"
+      });
+    }
+
+    if (!req.file) {
+      return res.json({
+        success: false,
+        message: "image file is required"
+      });
+    }
+    let imageUrl = "";
+
+    try {
+      const result = await cloudinary.uploader.upload(req.file.path, {
+        resource_type: "image",
+        folder: "pets",
+      });
+      imageUrl = result.secure_url;
+    } finally {
+      fs.unlink(req.file.path, () => {});
+    }
+
+    const updatedPet = await petModel.findByIdAndUpdate(
+      petId,
+      { profileImage: imageUrl, updatedAt: new Date() },
+      { new: true }
+    );
+
+    if (!updatedPet) {
+      return res.json({
+        success: false,
+        message: "Pet not found"
+      });
+    }
+
+    res.json({
+      success: true,
+      message: "Pet profile image updated",
+      pet: updatedPet,
+      imageUrl
+    });
+  } catch (error) {
+    console.log(error);
+    res.json({ success: false, message: error.message });
+  }
+};
+
 // Eliminar mascota
 const deletePet = async (req, res) => {
   try {
@@ -295,6 +413,8 @@ export {
   getActivePet, 
   getPetById, 
   updatePet, 
+  updatePetProfile,
+  updatePetProfileImage,
   deletePet, 
   setActivePet 
 };

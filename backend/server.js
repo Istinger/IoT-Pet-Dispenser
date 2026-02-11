@@ -1,4 +1,6 @@
 import express  from 'express';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import cors from 'cors';
 import 'dotenv/config';
 import connectDB from './config/mongodb.js';
@@ -7,15 +9,21 @@ import authRouter from './routes/authRouter.js';
 import userRouter from './routes/userRouter.js';
 import petRouter from './routes/petRouter.js';
 import scheduleRouter from './routes/scheduleRoute.js';
+import connectCloudinary from './config/cloudinary.js';
 
 //App config
 const app = express();
 const port = process.env.PORT || 4000;
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 //DB config
 connectDB();
+connectCloudinary();
 
 app.use(express.json());//request parsed to json
 app.use(cors());
+
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.use('/api/sensors',sensorsRouter)
 app.use('/api/auth',authRouter)

@@ -14,22 +14,51 @@ const RegisterForm = () => {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [loading, setLoading] = useState(false)
 
+  const commonDomains = [
+    "gmail.com",
+    "hotmail.com",
+    "outlook.com",
+    "yahoo.com",
+    "icloud.com",
+    "proton.me",
+    "protonmail.com",
+    "live.com",
+    "aol.com",
+    "zoho.com",
+    "gmx.com"
+  ]
+
+  const isValidEmailDomain = (value) => {
+    const normalized = value.trim().toLowerCase()
+    const emailMatch = normalized.match(/^[^\s@]+@([^\s@]+)$/)
+    if (!emailMatch) {
+      return false
+    }
+
+    return commonDomains.includes(emailMatch[1])
+  }
+
   const handleNextStep = async (e) => {
     e.preventDefault()
 
+    if (!isValidEmailDomain(email)) {
+      toast.error("Usa un correo valido).")
+      return
+    }
+
     if (password !== confirmPassword) {
-      toast.error('Passwords do not match')
+      toast.error('Contraseñas no coinciden')
       return
     }
 
     if (password.length < 6) {
-      toast.error('Password must be at least 6 characters')
+      toast.error('La contraseña debe tener al menos 6 caracteres')
       return
     }
 
     const passwordRegex = /^(?=.*[a-zA-Z])(?=.*\d).{6,}$/
     if (!passwordRegex.test(password)) {
-      toast.error('Password must contain letters and numbers')
+      toast.error('La contraseña debe contener letras y números')
       return
     }
 
@@ -57,18 +86,18 @@ const RegisterForm = () => {
         // Luego actualizar el contexto
         login(data.token, userRole)
         
-        toast.success('Registration successful!')
+        toast.success('Registro exitoso!')
         
         // Pequeño delay para asegurar que el contexto se actualice
         setTimeout(() => {
           navigate('/registerPet')
         }, 100)
       } else {
-        toast.error(data.message || 'Registration failed')
+        toast.error(data.message || 'Registro fallido')
       }
     } catch (error) {
       console.error('Registration error:', error)
-      toast.error('Network error. Please try again.')
+      toast.error('Error de red. Por favor, inténtalo de nuevo.')
     } finally {
       setLoading(false)
     }
@@ -82,15 +111,15 @@ const RegisterForm = () => {
 
         <div className="bg-white rounded-2xl shadow-xl border border-slate-100 p-8">
           <h1 className="text-2xl font-bold text-slate-900 mb-2">
-            Create your account
+            Crea tu cuenta
           </h1>
           <p className="text-slate-500 text-sm mb-8">
-            Fill in your details to get started.
+            Completa tus datos para comenzar.
           </p>
 
           <form className="space-y-5" onSubmit={handleNextStep}>
             <AuthInput
-              label="Full Name"
+              label="Nombre completo"
               type="text"
               icon="user"
               placeholder="Alex Johnson"
@@ -98,7 +127,7 @@ const RegisterForm = () => {
               onChange={(e) => setName(e.target.value)}
             />
             <AuthInput
-              label="Email Address"
+              label="Correo electrónico"
               type="email"
               icon="mail"
               placeholder="alex@example.com"
@@ -106,7 +135,7 @@ const RegisterForm = () => {
               onChange={(e) => setEmail(e.target.value)}
             />
             <AuthInput
-              label="Password"
+              label="Contraseña"
               type="password"
               icon="lock"
               placeholder="••••••••"
@@ -115,7 +144,7 @@ const RegisterForm = () => {
               onChange={(e) => setPassword(e.target.value)}
             />
             <AuthInput
-              label="Confirm Password"
+              label="Confirmar contraseña"
               type="password"
               icon="lock"
               placeholder="••••••••"
@@ -129,7 +158,7 @@ const RegisterForm = () => {
               disabled={loading}
               className="w-full bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-4 rounded-xl shadow-lg transition-all flex justify-center items-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? 'Creating account...' : 'Next Step'}
+              {loading ? 'Creando cuenta...' : 'Siguiente paso'}
               {!loading && <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />}
             </button>
           </form>

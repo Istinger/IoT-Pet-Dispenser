@@ -12,8 +12,38 @@ const LoginForm = () => {
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
 
+  const commonDomains = [
+    "gmail.com",
+    "hotmail.com",
+    "outlook.com",
+    "yahoo.com",
+    "icloud.com",
+    "proton.me",
+    "protonmail.com",
+    "live.com",
+    "aol.com",
+    "zoho.com",
+    "gmx.com"
+  ]
+
+  const isValidEmailDomain = (value) => {
+    const normalized = value.trim().toLowerCase()
+    const emailMatch = normalized.match(/^[^\s@]+@([^\s@]+)$/)
+    if (!emailMatch) {
+      return false
+    }
+
+    return commonDomains.includes(emailMatch[1])
+  }
+
   const handleLogin = async (e) => {
     e.preventDefault()
+
+    if (!isValidEmailDomain(email)) {
+      toast.error("Usa un correo con dominio comun (ej. gmail.com, hotmail.com, outlook.com).")
+      return
+    }
+
     setLoading(true)
 
     try {

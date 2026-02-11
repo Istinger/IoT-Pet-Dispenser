@@ -5,9 +5,6 @@ const InsightsSection = () => {
     <section>
       <div className="flex justify-between mb-6">
         <h3 className="text-xl font-extrabold">Health & Nutrition Insights</h3>
-        <button className="text-blue-600 text-xs font-bold flex items-center gap-2 uppercase">
-          Full Report <ArrowRight className="h-4 w-4" />
-        </button>
       </div>
 
       <div className="grid md:grid-cols-2 gap-8">

@@ -1,6 +1,6 @@
 import { Pencil, Scale, Target, Clock } from "lucide-react"
 
-const PetProfileCard = ({ name, breed, age, weight, goal, progress, img }) => {
+const PetProfileCard = ({ name, breed, age, weight, goal, progress, img, onEdit }) => {
   return (
     <div className="bg-white rounded-2xl border shadow-sm hover:shadow-md transition-shadow">
       <div className="flex flex-col md:flex-row h-full">
@@ -8,9 +8,7 @@ const PetProfileCard = ({ name, breed, age, weight, goal, progress, img }) => {
           className="w-full md:w-56 h-64 bg-cover bg-center relative"
           style={{ backgroundImage: `url(${img})` }}
         >
-          <div className="absolute top-4 left-4 bg-white/90 px-2 py-1 rounded text-[10px] font-bold text-blue-600">
-            Online
-          </div>
+
         </div>
 
         <div className="flex-1 p-6 flex flex-col justify-between">
@@ -22,7 +20,12 @@ const PetProfileCard = ({ name, breed, age, weight, goal, progress, img }) => {
                   {breed} • {age}
                 </p>
               </div>
-              <button className="p-2 hover:bg-blue-50 rounded-lg">
+              <button
+                type="button"
+                onClick={onEdit}
+                className="p-2 hover:bg-blue-50 rounded-lg"
+                aria-label="Editar mascota"
+              >
                 <Pencil className="h-4 w-4 text-slate-400" />
               </button>
             </div>
@@ -36,7 +39,7 @@ const PetProfileCard = ({ name, breed, age, weight, goal, progress, img }) => {
           <div className="mt-8">
             <div className="flex justify-between mb-2 text-xs font-bold">
               <span className="text-slate-600">
-                {progress.consumed} kcal consumed
+                {progress.consumed} {progress.unit || "kcal"} consumed
               </span>
               <span className="text-emerald-600">{progress.percent}%</span>
             </div>

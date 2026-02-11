@@ -5,9 +5,12 @@ import {
   getActivePet, 
   getPetById, 
   updatePet, 
+  updatePetProfile,
+  updatePetProfileImage,
   deletePet, 
   setActivePet 
 } from '../controllers/petController.js';
+import upload from '../middleware/multer.js';
 
 const petRouter = express.Router();
 
@@ -25,6 +28,12 @@ petRouter.get('/:petId', getPetById);
 
 // UPDATE - Update pet information
 petRouter.put('/:petId', updatePet);
+
+// UPDATE - Update pet profile (photo, name, weight)
+petRouter.patch('/:petId/profile', updatePetProfile);
+
+// UPDATE - Upload pet profile image
+petRouter.patch('/:petId/profile-image', upload.single('image'), updatePetProfileImage);
 
 // DELETE - Delete a pet
 petRouter.delete('/:petId', deletePet);

@@ -23,6 +23,8 @@ const decodeToken = (token) => {
     }
 }
 
+const dogBreedRegex = /^(?:Chihuahua|Pomerania|Shih Tzu|Yorkshire Terrier|Malt[eé]s|Bich[oó]n Fris[eé]|Bich[oó]n Frise|Pekin[eé]s|Beagle|Cocker Spaniel|Bulldog Franc[eé]s|Schnauzer Miniatura|Boston Terrier|Pug|Labrador Retriever|Golden Retriever|Pastor Alem[aá]n|Rottweiler|Doberman|Boxer|D[aá]lmat[aá]|Border Collie|Pastor Australiano|Husky Siberiano|Akita Inu|San Bernardo|Mast[ií]n Espa[nñ]ol|Alaskan Malamute)$/i
+
 const PetForm = () => {
     const navigate = useNavigate()
     const { token } = useContext(AuthContext)
@@ -74,6 +76,12 @@ const PetForm = () => {
         // Validar campos requeridos
         if (!formData.name || !formData.breed || !formData.age || !formData.weight) {
             setError('Por favor completa todos los campos')
+            return
+        }
+
+        const trimmedBreed = formData.breed.trim()
+        if (!dogBreedRegex.test(trimmedBreed)) {
+            setError('Raza no válida. Usa una de las razas disponibles.')
             return
         }
 
