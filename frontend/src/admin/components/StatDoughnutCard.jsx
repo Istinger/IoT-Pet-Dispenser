@@ -2,10 +2,15 @@ const StatDoughnutCard = ({
   optimalCount = 712,
   warningCount = 94,
   criticalCount = 22,
+  averageGrams = null,
+  averagePercent = null,
 }) => {
   const totalCount = optimalCount + warningCount + criticalCount
   const optimalPercent = totalCount > 0 ? Math.round((optimalCount / totalCount) * 100) : 0
-  const optimalOffset = 251.2 * (1 - optimalPercent / 100)
+  const displayPercent = typeof averagePercent === "number"
+    ? Math.round(averagePercent)
+    : optimalPercent
+  const optimalOffset = 251.2 * (1 - displayPercent / 100)
   const warningOffset = 251.2 * (1 - (warningCount / (totalCount || 1)) * 100 / 100)
 
   return (
@@ -20,8 +25,9 @@ const StatDoughnutCard = ({
             <p className="text-xs text-slate-400">Food capacity status by device</p>
           </div>
         </div>
-        <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Real-time</span>
+        <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Live</span>
       </div>
+
 
       <div className="flex flex-col items-center gap-8 md:flex-row md:justify-around">
         <div className="relative flex h-48 w-48 items-center justify-center">
@@ -71,8 +77,10 @@ const StatDoughnutCard = ({
             />
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="text-3xl font-black text-slate-900">{optimalPercent}%</span>
-            <span className="text-[10px] font-bold uppercase text-slate-400 tracking-tight">Healthy</span>
+            <span className="text-3xl font-black text-slate-900">{displayPercent}%</span>
+            <span className="text-[10px] font-bold uppercase text-slate-400 tracking-tight">
+              {typeof averagePercent === "number" ? "Promedio" : "Healthy"}
+            </span>
           </div>
         </div>
 

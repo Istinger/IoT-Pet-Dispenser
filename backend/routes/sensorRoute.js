@@ -8,6 +8,7 @@ import {
 	deleteSensorById,
 	createSensorCommand,
 	getLatestCommandByDevice,
+	getCommands,
 	updateCommandStatus,
 	reportSensorStatus,
 	getCommandForDevice,
@@ -41,6 +42,9 @@ sensorRouter.get('/device/:deviceId/latest', getLatestByDevice);
 
 // COMMANDS - Create a dispense command
 sensorRouter.post('/commands', createSensorCommand);
+
+// COMMANDS - List commands (optional filters)
+sensorRouter.get('/commands', getCommands);
 
 // COMMANDS - Get latest pending command for a device
 sensorRouter.get('/commands/device/:deviceId/latest', getLatestCommandByDevice);

@@ -6,24 +6,38 @@ import PeakHoursCard from "../components/PeakHoursCard"
 
 const AdminOverview = () => {
   const [sensors, setSensors] = useState([])
+  const [commands, setCommands] = useState([])
   const hopperCapacity = 5000
+  const recentLimit = 200
+  const commandsLimit = 500
 
   useEffect(() => {
     const fetchSensors = async () => {
       try {
         const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || ""
-        const response = await fetch(`${apiBaseUrl}/api/sensors`)
-        const payload = await response.json()
+        const [sensorsResponse, commandsResponse] = await Promise.all([
+          fetch(`${apiBaseUrl}/api/sensors?limit=${recentLimit}`),
+          fetch(`${apiBaseUrl}/api/sensors/commands?status=completed&limit=${commandsLimit}`),
+        ])
 
-        if (!response.ok || !payload.success) {
+        const sensorsPayload = await sensorsResponse.json()
+        const commandsPayload = await commandsResponse.json()
+
+        if (!sensorsResponse.ok || !sensorsPayload.success) {
           setSensors([])
-          return
+        } else {
+          setSensors(sensorsPayload.data)
         }
 
-        setSensors(payload.data)
+        if (!commandsResponse.ok || !commandsPayload.success) {
+          setCommands([])
+        } else {
+          setCommands(commandsPayload.data)
+        }
       } catch (error) {
         console.error("Failed to load sensor summary", error)
         setSensors([])
+        setCommands([])
       }
     }
 
@@ -31,15 +45,33 @@ const AdminOverview = () => {
   }, [])
 
   const summary = useMemo(() => {
+    const now = Date.now()
+    const cutoff = now - 24 * 60 * 60 * 1000
+    const minGrams = 100
+
     let optimal = 0
     let warning = 0
     let critical = 0
+    let totalGrams = 0
+    let totalCount = 0
 
-    sensors.forEach((item) => {
-      if (typeof item.weightFood !== "number") {
-        return
-      }
-      const percent = (item.weightFood / hopperCapacity) * 100
+    commands.forEach((item) => {
+      if (item.status !== "completed") return
+      const timestamp = new Date(item.completedAt || item.updatedAt || item.createdAt).getTime()
+      if (!Number.isFinite(timestamp) || timestamp < cutoff) return
+
+      const delivered = typeof item.portionDelivered === "number"
+        ? item.portionDelivered
+        : typeof item.portionTarget === "number"
+          ? item.portionTarget
+          : null
+
+      if (typeof delivered !== "number" || delivered < minGrams) return
+
+      totalGrams += delivered
+      totalCount += 1
+
+      const percent = (delivered / hopperCapacity) * 100
       if (percent < 20) {
         critical += 1
       } else if (percent < 40) {
@@ -49,25 +81,27 @@ const AdminOverview = () => {
       }
     })
 
-    return { optimal, warning, critical }
-  }, [sensors])
+    const averageGrams = totalCount > 0 ? totalGrams / totalCount : null
+    const averagePercent = typeof averageGrams === "number"
+      ? Math.min(100, Math.max(0, (averageGrams / hopperCapacity) * 100))
+      : null
+    return { optimal, warning, critical, averageGrams, averagePercent }
+  }, [commands, hopperCapacity])
 
   const peakBars = useMemo(() => {
-    const buckets = [6, 8, 10, 12, 14, 16, 18, 20]
+    const buckets = Array.from({ length: 12 }, (_, index) => index * 2)
     const counts = buckets.reduce((acc, hour) => {
       acc[hour] = 0
       return acc
     }, {})
 
-    sensors.forEach((item) => {
-      const hasDispense = item.dispensing === true
-        || (typeof item.portionDelivered === "number" && item.portionDelivered > 0)
-      if (!hasDispense) return
-
-      const timestamp = new Date(item.createdAt)
+    commands.forEach((item) => {
+      if (item.status !== "completed") return
+      const timestamp = new Date(item.completedAt || item.updatedAt || item.createdAt)
       const hour = timestamp.getHours()
-      if (counts[hour] !== undefined) {
-        counts[hour] += 1
+      const bucket = Math.floor(hour / 2) * 2
+      if (counts[bucket] !== undefined) {
+        counts[bucket] += 1
       }
     })
 
@@ -80,8 +114,9 @@ const AdminOverview = () => {
       label: `${String(hour).padStart(2, "0")}:00`,
       h: `${Math.round((counts[hour] / max) * 100)}%`,
       active: String(hour) === peakHour,
+      count: counts[hour],
     }))
-  }, [sensors])
+  }, [commands])
 
   return (
     <AdminLayout>
@@ -93,6 +128,8 @@ const AdminOverview = () => {
             optimalCount={summary.optimal}
             warningCount={summary.warning}
             criticalCount={summary.critical}
+            averageGrams={summary.averageGrams}
+            averagePercent={summary.averagePercent}
           />
           <PeakHoursCard bars={peakBars} />
         </div>

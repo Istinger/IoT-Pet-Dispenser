@@ -89,20 +89,28 @@ const createSensorData = async (req, res) => {
 };
 
 // Get all sensor data
-// GET /api/sensors
+// GET /api/sensors?limit=10
 const getAllSensorData = async (req, res) => {
     try {
-        const sensorData = await sensorsModel.find().sort({ createdAt: -1 });
-        res.status(200).json({ 
-            success: true, 
-            data: sensorData 
+        const rawLimit = Number.parseInt(req.query.limit, 10);
+        const limit = Number.isNaN(rawLimit) ? 0 : Math.min(Math.max(rawLimit, 0), 100);
+
+        let query = sensorsModel.find().sort({ createdAt: -1 });
+        if (limit > 0) {
+            query = query.limit(limit);
+        }
+
+        const sensorData = await query;
+        res.status(200).json({
+            success: true,
+            data: sensorData
         });
     } catch (error) {
         console.error('Error fetching sensor data:', error);
-        res.status(500).json({ 
-            success: false, 
+        res.status(500).json({
+            success: false,
             message: 'Error fetching sensor data',
-            error: error.message 
+            error: error.message
         });
     }
 };
@@ -436,6 +444,44 @@ const getLatestCommandByDevice = async (req, res) => {
     }
 };
 
+// GET /api/sensors/commands?status=completed&limit=100
+const getCommands = async (req, res) => {
+    try {
+        const { status } = req.query;
+        const rawLimit = Number.parseInt(req.query.limit, 10);
+        const limit = Number.isNaN(rawLimit) ? 0 : Math.min(Math.max(rawLimit, 0), 500);
+
+        const query = {};
+        if (status) {
+            query.status = status;
+        }
+
+        let commandQuery = sensorCommandModel.find(query);
+        if (status === 'completed') {
+            commandQuery = commandQuery.sort({ completedAt: -1, createdAt: -1 });
+        } else {
+            commandQuery = commandQuery.sort({ createdAt: -1 });
+        }
+
+        if (limit > 0) {
+            commandQuery = commandQuery.limit(limit);
+        }
+
+        const commands = await commandQuery;
+        res.status(200).json({
+            success: true,
+            data: commands
+        });
+    } catch (error) {
+        console.error('Error fetching commands:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching commands',
+            error: error.message
+        });
+    }
+};
+
 // PATCH /api/sensors/commands/:id
 const updateCommandStatus = async (req, res) => {
     try {
@@ -527,6 +573,7 @@ export {
     deleteSensorById,
     createSensorCommand,
     getLatestCommandByDevice,
+    getCommands,
     updateCommandStatus,
     reportSensorStatus,
     getCommandForDevice,

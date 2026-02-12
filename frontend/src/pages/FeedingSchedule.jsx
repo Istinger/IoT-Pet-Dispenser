@@ -198,12 +198,12 @@ const FeedingSchedulePage = () => {
 
       // Crear orden de dispensación automáticamente si está activo
       if (schedule.isActive !== false && schedule.portionGrams > 0) {
-        console.log(`📋 Ejecutando orden para ${schedule.title}: ${schedule.portionGrams}g`)
+        console.log(`Ejecutando orden para ${schedule.title}: ${schedule.portionGrams}g`)
         const dispenseResult = await dispenseNow(schedule.portionGrams)
         if (dispenseResult.success) {
-          toast.success(`✅ Horario guardado y orden enviada: ${schedule.portionGrams}g`)
+          toast.success(`Horario guardado y orden enviada: ${schedule.portionGrams}g`)
         } else {
-          toast.warning(`⚠️ Horario guardado pero fallo la orden: ${dispenseResult.error}`)
+          toast.warning(`Horario guardado pero fallo la orden: ${dispenseResult.error}`)
         }
       }
     } catch (err) {
@@ -227,11 +227,11 @@ const FeedingSchedulePage = () => {
       const result = await dispenseNow(grams)
 
       if (result.success) {
-        toast.success(`✅ Dispensando ${grams}g...`)
+        toast.success(`Dispensando ${grams}g...`)
         setError("")
       } else {
         setError(result.error || "No se pudo enviar la orden de dispensado.")
-        toast.error("❌ Error al dispensar")
+        toast.error("Error al dispensar")
       }
     } catch (err) {
       console.error("Failed to send instant feed", err)
@@ -325,7 +325,7 @@ const FeedingSchedulePage = () => {
               {dispenserStatus && (
                 <div className="mt-3 text-sm space-y-1">
                   <p className={`font-semibold ${dispensing ? 'text-green-600' : 'text-slate-600'}`}>
-                    {dispensing ? '🟢 Dispensador activo' : '⚪️ Dispensador inactivo'}
+                    {dispensing ? 'Dispensador activo' : 'Dispensador inactivo'}
                   </p>
                   <p className="text-slate-500">
                     Peso actual: {dispenserStatus.pesoComida || 0}g

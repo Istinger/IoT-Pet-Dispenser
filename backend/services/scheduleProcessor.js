@@ -121,7 +121,7 @@ const processSchedules = async () => {
  * Inicia un procesador de schedules (ejecuta cada minuto)
  */
 const startScheduleProcessor = (intervalMs = 60000) => {
-  console.log(' Iniciando procesador de schedules...');
+  console.log('Iniciando procesador de schedules');
 
   // Ejecutar inmediatamente
   processSchedules();

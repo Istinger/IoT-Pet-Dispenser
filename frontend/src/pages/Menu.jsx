@@ -9,16 +9,20 @@ import Topbar from "../components/dashboard/Topbar"
 
 const HOPPER_CAPACITY_GRAMS = 5000
 const SERVING_GRAMS = 50
+const RECENT_LIMIT = 10
+const MIN_FOOD_GRAMS = 100
+const POLL_INTERVAL_MS = 5000
 
 const Menu= () => {
   const [logs, setLogs] = useState([])
   const [latestSensor, setLatestSensor] = useState(null)
+  const [avgFoodWeight, setAvgFoodWeight] = useState(null)
 
   useEffect(() => {
     const fetchSensorData = async () => {
       try {
         const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || ""
-        const response = await fetch(`${apiBaseUrl}/api/sensors`)
+        const response = await fetch(`${apiBaseUrl}/api/sensors?limit=${RECENT_LIMIT}`)
         const payload = await response.json()
 
         if (!response.ok || !payload.success) {
@@ -30,8 +34,17 @@ const Menu= () => {
         const latest = sorted.length > 0 ? sorted[0] : null
         setLatestSensor(latest)
 
-        const formatted = sorted.slice(0, 5).map((item) => {
-          const foodValue = typeof item.weightFood === "number" ? item.weightFood : null
+        const formatted = sorted.map((item) => {
+          const foodValue = typeof item.weightFood === "number"
+            ? item.weightFood
+            : typeof item.pesoComida === "number"
+              ? item.pesoComida
+              : null
+          const animalValue = typeof item.weightAnimal === "number"
+            ? item.weightAnimal
+            : typeof item.pesoAnimal === "number"
+              ? item.pesoAnimal
+              : null
           const percent = foodValue === null
             ? null
             : Math.min(100, Math.max(0, (foodValue / HOPPER_CAPACITY_GRAMS) * 100))
@@ -56,22 +69,42 @@ const Menu= () => {
             id: item._id,
             device: item.deviceId,
             time: new Date(item.createdAt).toLocaleString(),
+            timeRaw: item.createdAt,
+            foodValue,
             foodWeight: foodValue !== null ? `${foodValue.toFixed(0)} g` : "--",
-            animalWeight: typeof item.weightAnimal === "number" ? `${item.weightAnimal.toFixed(1)} kg` : "--",
+            animalWeight: animalValue !== null ? `${animalValue.toFixed(1)} kg` : "--",
             statusLabel,
             statusTone,
           }
-        })
+        }).filter((item) => typeof item.foodValue === "number" && item.foodValue >= MIN_FOOD_GRAMS)
 
         setLogs(formatted)
+
+        const foodValues = sorted
+          .map((item) => {
+            if (typeof item.weightFood === "number") return item.weightFood
+            if (typeof item.pesoComida === "number") return item.pesoComida
+            return null
+          })
+          .filter((value) => value !== null && value >= MIN_FOOD_GRAMS)
+
+        if (foodValues.length > 0) {
+          const total = foodValues.reduce((sum, value) => sum + value, 0)
+          setAvgFoodWeight(total / foodValues.length)
+        } else {
+          setAvgFoodWeight(null)
+        }
       } catch (error) {
         console.error("Failed to fetch sensor data", error)
         setLogs([])
         setLatestSensor(null)
+        setAvgFoodWeight(null)
       }
     }
 
     fetchSensorData()
+    const interval = setInterval(fetchSensorData, POLL_INTERVAL_MS)
+    return () => clearInterval(interval)
   }, [])
 
   return (
@@ -82,16 +115,16 @@ const Menu= () => {
         <Topbar />
 
         <div className="p-8 max-w-7xl mx-auto w-full space-y-8">
-          <AlertBanner />
+        
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <HopperCard
               capacityGrams={HOPPER_CAPACITY_GRAMS}
               servingGrams={SERVING_GRAMS}
-              weightFood={latestSensor?.weightFood}
+              weightFood={avgFoodWeight}
             />
             <NextFeedCard
-              dispensing={latestSensor?.dispensing}
+              dispensing={latestSensor?.dispensing || latestSensor?.servoAbierto}
               portionTarget={latestSensor?.portionTarget}
               portionDelivered={latestSensor?.portionDelivered}
             />
