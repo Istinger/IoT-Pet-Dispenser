@@ -9,7 +9,8 @@
   "scripts": {
     "start": "node server.js",
     "server": "nodemon server.js",
-    "create-admin": "node scripts/createAdmin.js"
+    "create-admin": "node scripts/createAdmin.js",
+    "test:dispense": "node scripts/testDispense.js"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",

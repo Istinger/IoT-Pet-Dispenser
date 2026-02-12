@@ -25,3 +25,12 @@ coverage/
 *.swp
 *.swo
 *.bak
+backend/TEST_DISPENSE.md
+backend/dashboardTesting.html
+backend/scripts/testDispense.js
+QUICK_START.md
+SISTEMA_DISPENSADO.md
+Arduino_CORREGIDO.ino
+sensores.ino
+ARQUITECTURA_COMPLETA.md
+FIX_ARDUINO_REPETICION.ino

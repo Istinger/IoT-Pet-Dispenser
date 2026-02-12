@@ -136,7 +136,7 @@ const ActivePet = ({ navigate }) => {
         Active Pets
       </p>
       <div 
-        onClick={() => navigate('/pet-profile')}
+        onClick={() => navigate('/petProfile')}
         className="flex items-center gap-3 px-4 py-2 bg-white border rounded-xl shadow-sm cursor-pointer hover:shadow-md transition-shadow"
       >
         <div

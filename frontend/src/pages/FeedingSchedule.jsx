@@ -7,6 +7,7 @@ import FeedingSummary from "../components/feeding/FeedingSummary"
 import InstantFeed from "../components/feeding/InstantFeed"
 import MealCard from "../components/feeding/MealCard"
 import { AuthContext } from "../context/AuthContext"
+import { useDispenser } from "../hooks/useDispenser"
 
 const decodeToken = (token) => {
   try {
@@ -66,6 +67,15 @@ const FeedingSchedulePage = () => {
   const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:4000"
   const deviceId = import.meta.env.VITE_DEVICE_ID || "petfeeder-01"
   const dailyTargetGrams = Number(import.meta.env.VITE_DAILY_TARGET_GRAMS) || 1250
+
+  // Usar hook del dispensador
+  const { 
+    status: dispenserStatus, 
+    dispensing, 
+    loading: dispenserLoading,
+    dispenseNow,
+    refreshStatus: refreshDispenserStatus
+  } = useDispenser(deviceId)
 
   const handleLogout = () => {
     if (logout) {
@@ -185,6 +195,17 @@ const FeedingSchedulePage = () => {
       setSchedules((prev) =>
         prev.map((item, idx) => (idx === index ? { ...item, ...saved } : item))
       )
+
+      // Crear orden de dispensación automáticamente si está activo
+      if (schedule.isActive !== false && schedule.portionGrams > 0) {
+        console.log(`📋 Ejecutando orden para ${schedule.title}: ${schedule.portionGrams}g`)
+        const dispenseResult = await dispenseNow(schedule.portionGrams)
+        if (dispenseResult.success) {
+          toast.success(`✅ Horario guardado y orden enviada: ${schedule.portionGrams}g`)
+        } else {
+          toast.warning(`⚠️ Horario guardado pero fallo la orden: ${dispenseResult.error}`)
+        }
+      }
     } catch (err) {
       console.error("Failed to save schedule", err)
       setError("No se pudo guardar el horario.")
@@ -203,24 +224,19 @@ const FeedingSchedulePage = () => {
       }
 
       setInstantLoading(true)
-      const response = await fetch(`${apiBaseUrl}/api/schedules/instant`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId,
-          petId,
-          deviceId,
-          portionGrams: grams,
-        }),
-      })
+      const result = await dispenseNow(grams)
 
-      const result = await response.json()
-      if (!response.ok || !result.success) {
-        setError(result.message || "No se pudo enviar la porcion.")
+      if (result.success) {
+        toast.success(`✅ Dispensando ${grams}g...`)
+        setError("")
+      } else {
+        setError(result.error || "No se pudo enviar la orden de dispensado.")
+        toast.error("❌ Error al dispensar")
       }
     } catch (err) {
       console.error("Failed to send instant feed", err)
       setError("No se pudo enviar la porcion.")
+      toast.error("Error al dispensar")
     } finally {
       setInstantLoading(false)
     }
@@ -306,6 +322,16 @@ const FeedingSchedulePage = () => {
               <p className="text-slate-500">
                 Adjust portions and timing for your Golden Retriever
               </p>
+              {dispenserStatus && (
+                <div className="mt-3 text-sm space-y-1">
+                  <p className={`font-semibold ${dispensing ? 'text-green-600' : 'text-slate-600'}`}>
+                    {dispensing ? '🟢 Dispensador activo' : '⚪️ Dispensador inactivo'}
+                  </p>
+                  <p className="text-slate-500">
+                    Peso actual: {dispenserStatus.pesoComida || 0}g
+                  </p>
+                </div>
+              )}
             </div>
             <button 
               onClick={handleLogout}

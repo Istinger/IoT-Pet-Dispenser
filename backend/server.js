@@ -11,6 +11,7 @@ import petRouter from './routes/petRouter.js';
 import scheduleRouter from './routes/scheduleRoute.js';
 import notificationRouter from './routes/notificationRoute.js';
 import connectCloudinary from './config/cloudinary.js';
+import { startScheduleProcessor } from './services/scheduleProcessor.js';
 
 //App config
 const app = express();
@@ -41,4 +42,7 @@ app.get('/', (req, res) => {
 
 app.listen(port, '0.0.0.0', () => {
   console.log(`Server is running on port ${port}`);
+  
+  // Iniciar procesador de schedules (ejecuta cada minuto)
+  startScheduleProcessor(60000);
 });

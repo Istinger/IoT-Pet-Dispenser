@@ -1,6 +1,8 @@
 import mongoose from "mongoose";
 
 const sensorsSchema = new mongoose.Schema({
+
+  /* ===== IDENTIFICACIÓN ===== */
   deviceId: {
     type: String,
     required: true
@@ -12,26 +14,32 @@ const sensorsSchema = new mongoose.Schema({
     default: false
   },
 
-  irProximity: {
+  ir: {
     type: Boolean,
     default: false
   },
 
-  /* ===== PESO ===== */
-  weightAnimal: {
-    type: Number, // kg
+  /* ===== PESO COMIDA ===== */
+  pesoComida: {
+    type: Number,   // gramos
     default: 0
   },
 
-  weightFood: {
-    type: Number, // gramos
+  /* ===== PESO ANIMAL (si luego lo usas) ===== */
+  pesoAnimal: {
+    type: Number,   // kg
     default: 0
   },
 
-  /* ===== DISPENSADOR ===== */
+  /* ===== SERVO ===== */
   servoAngle: {
     type: Number,
     default: 0
+  },
+
+  servoAbierto: {
+    type: Boolean,
+    default: false
   },
 
   dispensing: {
@@ -39,14 +47,14 @@ const sensorsSchema = new mongoose.Schema({
     default: false
   },
 
-  /* ===== EVENTOS ===== */
+  /* ===== CONTROL DE PORCIÓN ===== */
   portionTarget: {
-    type: Number, // gramos solicitados por backend
+    type: Number,   // gramos solicitados
     default: 0
   },
 
   portionDelivered: {
-    type: Number, // gramos reales entregados
+    type: Number,   // gramos realmente servidos
     default: 0
   },
 
@@ -56,7 +64,7 @@ const sensorsSchema = new mongoose.Schema({
     default: Date.now
   }
 
-});
+}, { versionKey: false });
 
 const sensorsModel =
   mongoose.models.sensors ||

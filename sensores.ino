@@ -1,5 +1,6 @@
 #include <WiFi.h>
 #include <HTTPClient.h>
+#include <ArduinoJson.h>
 #include <HX711.h>
 #include <ESP32Servo.h>
 
@@ -7,137 +8,71 @@
 #define DEVICE_ID "petfeeder-01"
 
 /* ================= WIFI ================= */
-const char* ssid     = "Galaxy A13 D7DC";
-const char* password = "muoh9266";
+const char* ssid = "WIFI";
+const char* password = "PASSW";
 
 /* ================= BACKEND ================= */
-const char* API_POST = "http://10.27.134.128:4000/api/sensors";
-const char* API_GET  = "http://10.27.134.128:4000/api/feeding/command";
+const char* API_STATUS = "http://IP:4000/api/sensors/status";
+const char* API_COMMAND = "http://IP:4000/api/sensors/command";
+const char* API_COMPLETE = "http://IP:4000/api/sensors/command";
 
-/* ================= OBJETOS ================= */
-HX711 balanzaComida;
-HX711 balanzaAnimal;
+/* ================= PINES ================= */
+#define PIR_PIN 26
+#define IR_PIN  25
+#define DOUT 16
+#define CLK  4
+#define SERVO_PIN 13
+
+#define SERVO_ABIERTO 180
+#define SERVO_CERRADO 0
+
+#define LIMITE_MAXIMO 1110.0
+
+HX711 scale;
 Servo servo;
 
-/* ================= CALIBRACIÓN ================= */
-float ESCALA_COMIDA = -420.0;
-float ESCALA_ANIMAL = -2150.0;
+float calibration_factor = 66.74;
 
-/* ================= ESTADO ================= */
-bool backendPermite = false;
-float portionTarget = 0;
-float portionDelivered = 0;
-bool dispensing = false;
-int servoAngle = SERVO_CERRADO;
+bool sirviendo = false;
+float pesoObjetivo = 0;
 
-unsigned long lastSend = 0;
-unsigned long lastCommand = 0;
+// IMPORTANTE: Guardar commandId de la última orden ejecutada
+String lastCommandId = "";
+String currentCommandId = "";  // ID de la orden que se está ejecutando
 
-#define SEND_INTERVAL_MS     3000
-#define COMMAND_INTERVAL_MS  4000
-#define TIEMPO_MAX_SERVIR    12000
+unsigned long lastCheck = 0;
 
 /* ================= WIFI ================= */
 void connectWiFi() {
-  WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, password);
-  Serial.print("🌐 Conectando WiFi");
+  Serial.println("Conectando WiFi...");
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
     Serial.print(".");
   }
-  Serial.println("\n✅ WiFi conectado");
+  Serial.println("\nWiFi conectado");
 }
 
-/* ================= PESO FILTRADO ================= */
-float leerPeso(HX711 &balanza, int muestras) {
-  float suma = 0;
-  for (int i = 0; i < muestras; i++) {
-    suma += balanza.get_units(1);
-    delay(5);
-  }
-  return suma / muestras;
-}
-
-/* ================= GET COMANDO ================= */
-void getCommand() {
-  if (WiFi.status() != WL_CONNECTED) return;
-
+/* ================= MARCAR ORDEN COMO COMPLETADA ================= */
+void markCommandComplete(String commandId) {
+  if (commandId.length() == 0) return;
+  
   HTTPClient http;
-  http.begin(API_GET);
-
-  int httpCode = http.GET();
-  if (httpCode == 200) {
-    String payload = http.getString();
-
-    // EJEMPLO ESPERADO:
-    // { "permitir": true, "grams": 180 }
-
-    backendPermite = payload.indexOf("\"permitir\":true") > 0;
-
-    int gIndex = payload.indexOf("\"grams\":");
-    if (gIndex > 0) {
-      portionTarget = payload.substring(gIndex + 8).toFloat();
-    }
-
-    Serial.println("📥 Comando backend recibido");
-  }
-  http.end();
-}
-
-/* ================= SERVIR COMIDA ================= */
-void servirComida() {
-  Serial.println("🐕 Sirviendo comida...");
-  dispensing = true;
-  portionDelivered = 0;
-
-  servo.write(SERVO_ABIERTO);
-  servoAngle = SERVO_ABIERTO;
-
-  unsigned long inicio = millis();
-
-  while (true) {
-    float peso = leerPeso(balanzaComida, 5);
-    portionDelivered = peso;
-
-    if (peso >= portionTarget) break;
-    if (millis() - inicio > TIEMPO_MAX_SERVIR) break;
-
-    delay(100);
-  }
-
-  servo.write(SERVO_CERRADO);
-  servoAngle = SERVO_CERRADO;
-  dispensing = false;
-}
-
-/* ================= POST SENSORES ================= */
-void sendToBackend() {
-
-  if (WiFi.status() != WL_CONNECTED) return;
-
-  bool pir = digitalRead(PIR_PIN);
-  bool ir  = digitalRead(IR_PIN);
-
-  float weightAnimal = leerPeso(balanzaAnimal, 15);
-  float weightFood   = leerPeso(balanzaComida, 10);
-
-  String json = "{";
-  json += "\"deviceId\":\"" DEVICE_ID "\",";
-  json += "\"pir\":" + String(pir ? "true" : "false") + ",";
-  json += "\"irProximity\":" + String(ir ? "true" : "false") + ",";
-  json += "\"weightAnimal\":" + String(weightAnimal, 2) + ",";
-  json += "\"weightFood\":" + String(weightFood, 1) + ",";
-  json += "\"servoAngle\":" + String(servoAngle) + ",";
-  json += "\"dispensing\":" + String(dispensing ? "true" : "false") + ",";
-  json += "\"portionTarget\":" + String(portionTarget) + ",";
-  json += "\"portionDelivered\":" + String(portionDelivered);
-  json += "}";
-
-  HTTPClient http;
-  http.begin(API_POST);
+  String url = String(API_COMPLETE) + "/" + commandId + "/complete";
+  
+  http.begin(url);
   http.addHeader("Content-Type", "application/json");
-  http.POST(json);
+  
+  int httpCode = http.PATCH("");  // PATCH sin body
+  
+  if (httpCode == 200) {
+    Serial.print("✅ Orden marcada como completada: ");
+    Serial.println(commandId);
+  } else {
+    Serial.print("❌ Error marcando orden: ");
+    Serial.println(httpCode);
+  }
+  
   http.end();
 }
 
@@ -148,45 +83,130 @@ void setup() {
   pinMode(PIR_PIN, INPUT);
   pinMode(IR_PIN, INPUT);
 
-  servo.attach(SERVO_PIN);
+  scale.begin(DOUT, CLK);
+  scale.set_scale(calibration_factor);
+  delay(3000);
+  scale.tare();
+
+  servo.attach(SERVO_PIN, 500, 2400);
   servo.write(SERVO_CERRADO);
 
   connectWiFi();
-
-  balanzaComida.begin(HX_COMIDA_DT, HX_COMIDA_SCK);
-  balanzaComida.set_scale(ESCALA_COMIDA);
-  balanzaComida.tare();
-
-  balanzaAnimal.begin(HX_ANIMAL_DT, HX_ANIMAL_SCK);
-  balanzaAnimal.set_scale(ESCALA_ANIMAL);
-  balanzaAnimal.tare();
-
-  Serial.println("🐾 PetFeeder ESP32 listo");
 }
 
 /* ================= LOOP ================= */
 void loop() {
 
-  if (millis() - lastCommand > COMMAND_INTERVAL_MS) {
-    getCommand();
-    lastCommand = millis();
-  }
-
+  float peso = scale.get_units(10);
   bool pir = digitalRead(PIR_PIN);
   bool ir  = digitalRead(IR_PIN);
-  float pesoAnimal = leerPeso(balanzaAnimal, 10);
 
-  bool esPerro = (pesoAnimal >= 3.0);
+  /* ===== SI ESTÁ DISPENSANDO ===== */
+  if (sirviendo) {
 
-  if (backendPermite && pir && ir && esPerro && !dispensing) {
-    servirComida();
-    backendPermite = false; // evita repetir
+    if (peso >= pesoObjetivo || peso >= LIMITE_MAXIMO) {
+
+      servo.write(SERVO_CERRADO);
+      sirviendo = false;
+
+      Serial.println("✅ Dispensado completado");
+      Serial.print("Peso final: ");
+      Serial.print(peso);
+      Serial.println("g");
+
+      // 🔴 MARCAR ORDEN COMO COMPLETADA EN BACKEND
+      markCommandComplete(currentCommandId);
+      
+      // Guardar que ya ejecutamos esta orden
+      lastCommandId = currentCommandId;
+      currentCommandId = "";
+    }
   }
 
-  if (millis() - lastSend > SEND_INTERVAL_MS) {
-    sendToBackend();
-    lastSend = millis();
+  /* ===== CONSULTAR BACKEND CADA 3 SEGUNDOS ===== */
+  if (millis() - lastCheck >= 3000) {
+    lastCheck = millis();
+
+    if (WiFi.status() == WL_CONNECTED) {
+
+      HTTPClient http;
+      http.begin(API_COMMAND);
+      http.addHeader("Content-Type", "application/json");
+
+      String payload = "{\"deviceId\":\"" + String(DEVICE_ID) + "\"}";
+      int httpCode = http.POST(payload);
+
+      if (httpCode == 200) {
+
+        String response = http.getString();
+
+        DynamicJsonDocument doc(512);
+        deserializeJson(doc, response);
+
+        bool dispense = doc["dispense"];
+        float portionTarget = doc["portionTarget"];
+        String commandId = doc["commandId"].as<String>();
+
+        Serial.println("\n----- CONSULTA A BACKEND -----");
+        Serial.print("Respuesta: ");
+        Serial.println(response);
+
+        // ✅ VERIFICAR: Solo ejecutar si es una NUEVA orden (commandId diferente)
+        if (dispense && !sirviendo && commandId != lastCommandId) {
+
+          Serial.println("🎯 NUEVA ORDEN DETECTADA");
+          
+          pesoObjetivo = peso + portionTarget;
+
+          if (pesoObjetivo > LIMITE_MAXIMO)
+            pesoObjetivo = LIMITE_MAXIMO;
+
+          servo.write(SERVO_ABIERTO);
+          sirviendo = true;
+          currentCommandId = commandId;  // Guardar ID de la orden actual
+
+          Serial.println(">>> ABRIENDO SERVO");
+          Serial.print("Objetivo: ");
+          Serial.print(pesoObjetivo);
+          Serial.print("g | CommandId: ");
+          Serial.println(commandId);
+
+        } else if (dispense && commandId == lastCommandId) {
+          // Ignorar: Es la misma orden que ya ejecutamos
+          Serial.println("⏭️  IGNORANDO: Orden ya ejecutada");
+          
+        } else if (!dispense) {
+          // No hay nueva orden
+          Serial.println("⏸️  SIN ÓRDENES NUEVAS");
+        }
+
+        Serial.println("----------------------------");
+      }
+
+      http.end();
+
+      /* ===== ENVIAR ESTADO ===== */
+      HTTPClient httpStatus;
+      httpStatus.begin(API_STATUS);
+      httpStatus.addHeader("Content-Type", "application/json");
+
+      DynamicJsonDocument statusDoc(512);
+      statusDoc["deviceId"] = DEVICE_ID;
+      statusDoc["pir"] = pir;
+      statusDoc["ir"] = ir;
+      statusDoc["pesoComida"] = peso;
+      statusDoc["servoAbierto"] = sirviendo;
+
+      String jsonStatus;
+      serializeJson(statusDoc, jsonStatus);
+
+      int statusCode = httpStatus.POST(jsonStatus);
+      httpStatus.end();
+
+      Serial.print("Status enviado: ");
+      Serial.println(peso);
+    }
   }
 
-  delay(100);
+  delay(200);
 }
