@@ -10,7 +10,7 @@ import SettingsPage from './pages/Settings'
 import AdminLogin from './pages/AdminLogin'
 import AdminOverview from './admin/pages/AdminOverview'
 import AdminLogs from './admin/pages/AdminLogs'
-import AdminPerformance from './admin/pages/AdminPerformance'
+// import AdminPerformance from './admin/pages/AdminPerformance'
 import ProtectedRoute from './components/ProtectedRoute'
 import AdminRoute from './components/AdminRoute'
 import AdminUsers from './admin/pages/AdminUsers'
@@ -30,7 +30,7 @@ const App = () => {
         <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/admin" element={<AdminRoute><AdminOverview /></AdminRoute>} />
         <Route path="/admin/logs" element={<AdminRoute><AdminLogs /></AdminRoute>} />
-        <Route path="/admin/performance" element={<AdminRoute><AdminPerformance /></AdminRoute>} />
+        {/* <Route path="/admin/performance" element={<AdminRoute><AdminPerformance /></AdminRoute>} /> */}
         <Route path="/admin/users" element={<AdminRoute><AdminUsers /></AdminRoute>} />
       </Routes>
     </div>

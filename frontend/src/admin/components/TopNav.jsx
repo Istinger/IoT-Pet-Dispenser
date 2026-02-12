@@ -14,9 +14,9 @@ const TopNav = () => {
       <NavLink className={linkClass} to="/admin/logs">
         Logs
       </NavLink>
-      <NavLink className={linkClass} to="/admin/performance">
+      {/* <NavLink className={linkClass} to="/admin/performance">
         Performance
-      </NavLink>
+      </NavLink> */}
       <NavLink className={linkClass} to="/admin/users">
         Users
       </NavLink>

@@ -10,42 +10,80 @@ import FooterStatus from "../components/FooterStatus"
 
 const AdminPerformance = () => {
   const [sensors, setSensors] = useState([])
+  const [commands, setCommands] = useState([])
   const hopperCapacity = 5000
+  const pollInterval = 10000
 
   useEffect(() => {
-    const fetchSensors = async () => {
+    const fetchData = async () => {
       try {
         const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || ""
-        const response = await fetch(`${apiBaseUrl}/api/sensors`)
-        const payload = await response.json()
+        const [sensorsResponse, commandsResponse] = await Promise.all([
+          fetch(`${apiBaseUrl}/api/sensors?limit=500`),
+          fetch(`${apiBaseUrl}/api/sensors/commands?status=completed&limit=500`),
+        ])
 
-        if (!response.ok || !payload.success) {
+        const sensorsPayload = await sensorsResponse.json()
+        const commandsPayload = await commandsResponse.json()
+
+        if (sensorsResponse.ok && sensorsPayload.success) {
+          setSensors(sensorsPayload.data)
+        } else {
           setSensors([])
-          return
         }
 
-        setSensors(payload.data)
+        if (commandsResponse.ok && commandsPayload.success) {
+          setCommands(commandsPayload.data)
+        } else {
+          setCommands([])
+        }
       } catch (error) {
         console.error("Failed to load sensor performance", error)
         setSensors([])
+        setCommands([])
       }
     }
 
-    fetchSensors()
+    fetchData()
+    const interval = setInterval(fetchData, pollInterval)
+    return () => clearInterval(interval)
   }, [])
 
   const stats = useMemo(() => {
-    const animalWeights = sensors.map((item) => item.weightAnimal).filter((value) => typeof value === "number")
-    const foodWeights = sensors.map((item) => item.weightFood).filter((value) => typeof value === "number")
+    const animalWeights = sensors
+      .map((item) =>
+        typeof item.weightAnimal === "number"
+          ? item.weightAnimal
+          : typeof item.pesoAnimal === "number"
+            ? item.pesoAnimal
+            : null
+      )
+      .filter((value) => value !== null)
+
+    const foodWeightsFromSensors = sensors
+      .map((item) =>
+        typeof item.weightFood === "number"
+          ? item.weightFood
+          : typeof item.pesoComida === "number"
+            ? item.pesoComida
+            : null
+      )
+      .filter((value) => value !== null && value >= 100)
+
+    const foodWeightsFromCommands = commands
+      .filter((item) => item.status === "completed" && typeof item.portionDelivered === "number" && item.portionDelivered >= 100)
+      .map((item) => item.portionDelivered)
+
+    const allFoodWeights = [...foodWeightsFromSensors, ...foodWeightsFromCommands]
 
     const avgAnimal = animalWeights.length
       ? (animalWeights.reduce((sum, value) => sum + value, 0) / animalWeights.length).toFixed(1)
       : null
-    const avgFood = foodWeights.length
-      ? (foodWeights.reduce((sum, value) => sum + value, 0) / foodWeights.length).toFixed(0)
+    const avgFood = allFoodWeights.length
+      ? (allFoodWeights.reduce((sum, value) => sum + value, 0) / allFoodWeights.length).toFixed(0)
       : null
 
-    const dispenseEvents = sensors.filter((item) => typeof item.portionTarget === "number" && item.portionTarget > 0)
+    const dispenseEvents = commands.filter((item) => item.status === "completed" && typeof item.portionTarget === "number" && item.portionTarget > 0)
     const successfulDispenses = dispenseEvents.filter((item) => {
       if (typeof item.portionDelivered !== "number") return false
       return item.portionDelivered / item.portionTarget >= 0.9
@@ -54,13 +92,44 @@ const AdminPerformance = () => {
       ? Math.round((successfulDispenses.length / dispenseEvents.length) * 100)
       : 0
 
-    const tempPoints = foodWeights
-      .slice(0, 12)
-      .map((value) => Math.min(100, Math.max(0, (value / hopperCapacity) * 100)))
+    const tempPoints = (() => {
+      const now = Date.now()
+      const last24h = now - 24 * 60 * 60 * 1000
+      
+      const hourBuckets = {}
+      for (let i = 0; i < 24; i++) {
+        hourBuckets[i] = []
+      }
+
+      sensors.forEach((item) => {
+        const foodValue = typeof item.weightFood === "number"
+          ? item.weightFood
+          : typeof item.pesoComida === "number"
+            ? item.pesoComida
+            : null
+        
+        if (typeof foodValue !== "number" || foodValue < 100) return
+
+        const timestamp = new Date(item.createdAt).getTime()
+        if (!Number.isFinite(timestamp) || timestamp < last24h) return
+
+        const hourDiff = Math.floor((now - timestamp) / (60 * 60 * 1000))
+        const hour = Math.max(0, Math.min(23, hourDiff))
+        hourBuckets[hour].push(foodValue)
+      })
+
+      return Array.from({ length: 24 }, (_, i) => {
+        const values = hourBuckets[i]
+        if (values.length === 0) return 0
+        const avg = values.reduce((sum, v) => sum + v, 0) / values.length
+        return Math.min(100, Math.max(0, (avg / hopperCapacity) * 100))
+      }).reverse()
+    })()
 
     const buckets = ["Accurate", "Slight Low", "Low", "No Target"]
     const bucketCounts = { Accurate: 0, "Slight Low": 0, Low: 0, "No Target": 0 }
-    sensors.forEach((item) => {
+    commands.forEach((item) => {
+      if (item.status !== "completed") return
       if (typeof item.portionTarget !== "number" || item.portionTarget <= 0) {
         bucketCounts["No Target"] += 1
         return
@@ -89,7 +158,7 @@ const AdminPerformance = () => {
       tempPoints,
       barData,
     }
-  }, [sensors])
+  }, [sensors, commands])
 
   const handleSync = () => {
     console.log("Admin performance sync")
@@ -100,29 +169,6 @@ const AdminPerformance = () => {
       {/* HEADER */}
       <div className="mb-8 flex items-center justify-between">
         <h1 className="text-2xl font-extrabold">System Performance</h1>
-        <button className="btn-dark" onClick={handleSync}>Sync Live Data</button>
-      </div>
-
-      {/* STATS */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <StatCard
-          title="Avg Animal Weight"
-          value={stats.avgAnimal ? `${stats.avgAnimal} kg` : "--"}
-          footer={`Based on ${stats.totalReadings} readings`}
-          icon="timer"
-        />
-        <StatCard
-          title="Avg Hopper Weight"
-          value={stats.avgFood ? `${stats.avgFood} g` : "--"}
-          footer={`Based on ${stats.totalReadings} readings`}
-          icon="cloud-check"
-        />
-        <StatCard
-          title="Records"
-          value={String(stats.totalReadings)}
-          footer="Total sensor samples"
-          icon="database"
-        />
       </div>
 
       {/* CHARTS */}
@@ -156,7 +202,7 @@ const AdminPerformance = () => {
         <DoughnutChart percent={stats.successPercent} />
       </div>
 
-      <FooterStatus />
+   
     </AdminLayout>
   )
 }
