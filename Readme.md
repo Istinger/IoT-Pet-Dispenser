@@ -138,7 +138,7 @@ npm install
 
 Crear archivo `.env` en `frontend/`:
 ```env
-VITE_API_URL=http://localhost:4000
+VITE_API_URL=http://IP_BACKEND:4000
 ```
 
 ### 4. Configurar ESP32 (Arduino)
