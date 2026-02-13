@@ -8,11 +8,6 @@ const UsersHeader = () => (
         Configure owner profiles and system operator permissions.
       </p>
     </div>
-
-    <button className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-700">
-      <UserPlus className="w-4 h-4" />
-      Create New User
-    </button>
   </div>
 )
 
