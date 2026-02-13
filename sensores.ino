@@ -66,10 +66,10 @@ void markCommandComplete(String commandId) {
   int httpCode = http.PATCH("");  // PATCH sin body
   
   if (httpCode == 200) {
-    Serial.print("✅ Orden marcada como completada: ");
+    Serial.print("Orden marcada como completada: ");
     Serial.println(commandId);
   } else {
-    Serial.print("❌ Error marcando orden: ");
+    Serial.print("Error marcando orden: ");
     Serial.println(httpCode);
   }
   
@@ -109,12 +109,12 @@ void loop() {
       servo.write(SERVO_CERRADO);
       sirviendo = false;
 
-      Serial.println("✅ Dispensado completado");
+      Serial.println("Dispensado completado");
       Serial.print("Peso final: ");
       Serial.print(peso);
       Serial.println("g");
 
-      // 🔴 MARCAR ORDEN COMO COMPLETADA EN BACKEND
+      // MARCAR ORDEN COMO COMPLETADA EN BACKEND
       markCommandComplete(currentCommandId);
       
       // Guardar que ya ejecutamos esta orden
@@ -151,10 +151,10 @@ void loop() {
         Serial.print("Respuesta: ");
         Serial.println(response);
 
-        // ✅ VERIFICAR: Solo ejecutar si es una NUEVA orden (commandId diferente)
+        //VERIFICAR: Solo ejecutar si es una NUEVA orden (commandId diferente)
         if (dispense && !sirviendo && commandId != lastCommandId) {
 
-          Serial.println("🎯 NUEVA ORDEN DETECTADA");
+          Serial.println("NUEVA ORDEN DETECTADA");
           
           pesoObjetivo = peso + portionTarget;
 
@@ -173,11 +173,11 @@ void loop() {
 
         } else if (dispense && commandId == lastCommandId) {
           // Ignorar: Es la misma orden que ya ejecutamos
-          Serial.println("⏭️  IGNORANDO: Orden ya ejecutada");
+          Serial.println("IGNORANDO: Orden ya ejecutada");
           
         } else if (!dispense) {
           // No hay nueva orden
-          Serial.println("⏸️  SIN ÓRDENES NUEVAS");
+          Serial.println("SIN ÓRDENES NUEVAS");
         }
 
         Serial.println("----------------------------");
