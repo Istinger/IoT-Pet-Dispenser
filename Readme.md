@@ -536,16 +536,6 @@ npm run -- --host   # Iniciar en modo host para acceso desde red local
 
 ---
 
-## 👥 Contribuir
-
-1. Fork el proyecto
-2. Crear rama de feature (`git checkout -b feature/AmazingFeature`)
-3. Commit cambios (`git commit -m 'Add some AmazingFeature'`)
-4. Push a la rama (`git push origin feature/AmazingFeature`)
-5. Abrir Pull Request
-
----
-
 ## 📄 Licencia
 
 Este proyecto es para uso educativo como parte de un Proyecto Integrador.
@@ -567,7 +557,7 @@ Este proyecto es para uso educativo como parte de un Proyecto Integrador.
 
 ---
 
-## 📞 Contacto
+## 📞 Sugerencias
 
 Para preguntas o sugerencias, por favor abre un issue en el repositorio.
 
