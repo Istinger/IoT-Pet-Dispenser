@@ -26,7 +26,7 @@ coverage/
 *.swo
 *.bak
 backend/TEST_DISPENSE.md
-backend/dashboardTesting.html
+backend/dashboardTesting.md
 backend/scripts/testDispense.js
 QUICK_START.md
 SISTEMA_DISPENSADO.md
