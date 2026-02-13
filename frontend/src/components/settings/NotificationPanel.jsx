@@ -181,14 +181,14 @@ const NotificationPanel = () => {
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border overflow-hidden">
-      <header className="p-8 border-b flex flex-wrap items-center gap-4 justify-between">
-        <div className="flex items-center gap-3">
-          <div className="p-2.5 bg-blue-50 rounded-xl text-blue-600">
-            <Bell />
+      <header className="p-4 sm:p-6 lg:p-8 border-b flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 justify-between">
+        <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+          <div className="p-2 sm:p-2.5 bg-blue-50 rounded-xl text-blue-600 flex-shrink-0">
+            <Bell className="h-4 w-4 sm:h-5 sm:w-5" />
           </div>
-          <div>
-            <h2 className="text-xl font-bold">Notification Center</h2>
-            <p className="text-sm text-slate-500">
+          <div className="min-w-0 flex-1">
+            <h2 className="text-base sm:text-xl font-bold truncate">Notification Center</h2>
+            <p className="text-xs sm:text-sm text-slate-500">
               {unreadCount > 0 ? `${unreadCount} sin leer` : "Todo al dia"}
             </p>
           </div>
@@ -197,23 +197,23 @@ const NotificationPanel = () => {
         <button
           type="button"
           onClick={handleMarkAll}
-          className="text-sm font-bold text-blue-600 hover:text-blue-700"
+          className="text-xs sm:text-sm font-bold text-blue-600 hover:text-blue-700 disabled:opacity-50 transition-colors whitespace-nowrap flex-shrink-0"
           disabled={notifications.length === 0 || unreadCount === 0}
         >
-          Marcar todas como leidas
+          Marcar todas
         </button>
       </header>
 
       {loading && (
-        <div className="p-6 text-sm text-slate-500">Cargando notificaciones...</div>
+        <div className="p-4 sm:p-6 text-xs sm:text-sm text-slate-500">Cargando notificaciones...</div>
       )}
 
       {!loading && error && (
-        <div className="p-6 text-sm text-red-600">{error}</div>
+        <div className="p-4 sm:p-6 text-xs sm:text-sm text-red-600">{error}</div>
       )}
 
       {!loading && !error && notifications.length === 0 && (
-        <div className="p-6 text-sm text-slate-500">No hay notificaciones.</div>
+        <div className="p-4 sm:p-6 text-xs sm:text-sm text-slate-500">No hay notificaciones.</div>
       )}
 
       {!loading && !error && notifications.map((item) => {
@@ -231,12 +231,12 @@ const NotificationPanel = () => {
       })}
 
       {!loading && !error && hasMore && (
-        <div className="p-6 border-t">
+        <div className="p-4 sm:p-6 border-t">
           <button
             type="button"
             onClick={handleLoadMore}
             disabled={loadingMore}
-            className="w-full py-2 text-sm font-bold text-blue-600 hover:bg-blue-50 rounded-xl border border-blue-200 disabled:text-slate-400 disabled:border-slate-200"
+            className="w-full py-2 text-xs sm:text-sm font-bold text-blue-600 hover:bg-blue-50 rounded-xl border border-blue-200 disabled:text-slate-400 disabled:border-slate-200 transition-colors"
           >
             {loadingMore ? "Cargando..." : "Cargar mas"}
           </button>

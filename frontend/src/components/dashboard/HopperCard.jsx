@@ -15,19 +15,19 @@ const HopperCard = ({ capacityGrams = 5000, servingGrams = 50, weightFood }) => 
   const textTone = percent < 20 ? "text-rose-500" : percent < 40 ? "text-amber-500" : "text-blue-500"
   const strokeTone = percent < 20 ? "stroke-rose-500" : percent < 40 ? "stroke-amber-500" : "stroke-blue-500"
   return (
-    <div className="lg:col-span-2 bg-white border border-slate-100 rounded-xl p-6 shadow-sm flex items-center justify-between">
-      <div className="space-y-4">
+    <div className="lg:col-span-2 bg-white border border-slate-100 rounded-xl p-4 sm:p-6 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div className="space-y-4 w-full">
         <div>
           <h3 className="text-xs uppercase font-bold text-slate-400">
             Nivel de comida
           </h3>
           <div className="flex items-baseline gap-2">
-            <span className="text-4xl font-extrabold">{Math.round(percent)}%</span>
-            <span className="text-slate-400 text-sm">/ {grams === null ? "--" : (capacityGrams / 1000).toFixed(1)} kg</span>
+            <span className="text-3xl sm:text-4xl font-extrabold">{Math.round(percent)}%</span>
+            <span className="text-slate-400 text-xs sm:text-sm">/ {grams === null ? "--" : (capacityGrams / 1000).toFixed(1)} kg</span>
           </div>
         </div>
 
-        <div className="w-64">
+        <div className="w-full max-w-md">
           <div className="flex justify-between text-[10px] uppercase font-bold text-slate-400 mb-1">
             <span>{label}</span>
             <span>{grams === null ? "--" : `${servingsLeft} Servings left`}</span>
@@ -38,7 +38,7 @@ const HopperCard = ({ capacityGrams = 5000, servingGrams = 50, weightFood }) => 
         </div>
       </div>
 
-      <div className="relative h-32 w-32 flex items-center justify-center">
+      <div className="relative h-24 w-24 sm:h-32 sm:w-32 flex items-center justify-center flex-shrink-0">
         <svg className="absolute inset-0 -rotate-90" viewBox="0 0 36 36">
           <circle cx="18" cy="18" r="16" fill="none" strokeWidth="3" className="stroke-slate-100" />
           <circle
@@ -53,7 +53,7 @@ const HopperCard = ({ capacityGrams = 5000, servingGrams = 50, weightFood }) => 
             className={strokeTone}
           />
         </svg>
-        <ShoppingBasket className={`h-8 w-8 ${textTone}`} />
+        <ShoppingBasket className={`h-6 w-6 sm:h-8 sm:w-8 ${textTone}`} />
       </div>
     </div>
   )

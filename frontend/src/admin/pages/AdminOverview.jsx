@@ -122,8 +122,8 @@ const AdminOverview = () => {
     <AdminLayout>
       <PageHeader />
 
-      <div className="rounded-3xl bg-slate-50 p-6 lg:p-8">
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+      <div className="rounded-2xl sm:rounded-3xl bg-slate-50 p-4 sm:p-6 lg:p-8">
+        <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-2">
           <StatDoughnutCard
             optimalCount={summary.optimal}
             warningCount={summary.warning}

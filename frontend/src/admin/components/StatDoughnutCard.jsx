@@ -14,23 +14,23 @@ const StatDoughnutCard = ({
   const warningOffset = 251.2 * (1 - (warningCount / (totalCount || 1)) * 100 / 100)
 
   return (
-    <div className="rounded-xl border border-slate-100 bg-white p-6 shadow-sm">
-      <div className="mb-6 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600">
+    <div className="rounded-xl border border-slate-100 bg-white p-4 sm:p-6 shadow-sm">
+      <div className="mb-4 sm:mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 flex-shrink-0">
             <span className="material-symbols-outlined">humidity_low</span>
           </div>
-          <div>
-            <h3 className="font-bold text-slate-900">Hopper Health Summary</h3>
+          <div className="min-w-0 flex-1">
+            <h3 className="font-bold text-slate-900 text-sm sm:text-base truncate">Hopper Health Summary</h3>
             <p className="text-xs text-slate-400">Food capacity status by device</p>
           </div>
         </div>
-        <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Live</span>
+        <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 flex-shrink-0">Live</span>
       </div>
 
 
-      <div className="flex flex-col items-center gap-8 md:flex-row md:justify-around">
-        <div className="relative flex h-48 w-48 items-center justify-center">
+      <div className="flex flex-col items-center gap-4 sm:gap-8 md:flex-row md:justify-around">
+        <div className="relative flex h-32 w-32 sm:h-48 sm:w-48 items-center justify-center flex-shrink-0">
           <svg className="h-full w-full" viewBox="0 0 100 100">
             <circle
               className="text-slate-100"
@@ -77,36 +77,36 @@ const StatDoughnutCard = ({
             />
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="text-3xl font-black text-slate-900">{displayPercent}%</span>
+            <span className="text-2xl sm:text-3xl font-black text-slate-900">{displayPercent}%</span>
             <span className="text-[10px] font-bold uppercase text-slate-400 tracking-tight">
               {typeof averagePercent === "number" ? "Promedio" : "Healthy"}
             </span>
           </div>
         </div>
 
-        <div className="flex w-full flex-col gap-3 md:w-auto">
-          <div className="flex items-center justify-between gap-8 rounded-lg border border-slate-50 p-3 hover:bg-slate-50 transition-colors">
-            <div className="flex items-center gap-3">
-              <div className="h-3 w-3 rounded-full bg-emerald-500" />
-              <span className="text-sm font-medium text-slate-600">Healthy Level</span>
+        <div className="flex w-full flex-col gap-2 sm:gap-3 md:w-auto">
+          <div className="flex items-center justify-between gap-2 sm:gap-8 rounded-lg border border-slate-50 p-2 sm:p-3 hover:bg-slate-50 transition-colors">
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+              <div className="h-3 w-3 rounded-full bg-emerald-500 flex-shrink-0" />
+              <span className="text-xs sm:text-sm font-medium text-slate-600 truncate">Healthy</span>
             </div>
-            <span className="text-sm font-bold text-slate-900">{optimalCount} Units</span>
+            <span className="text-xs sm:text-sm font-bold text-slate-900 flex-shrink-0">{optimalCount}</span>
           </div>
 
-          <div className="flex items-center justify-between gap-8 rounded-lg border border-slate-50 p-3 hover:bg-slate-50 transition-colors">
-            <div className="flex items-center gap-3">
-              <div className="h-3 w-3 rounded-full bg-amber-400" />
-              <span className="text-sm font-medium text-slate-600">Low Warning</span>
+          <div className="flex items-center justify-between gap-2 sm:gap-8 rounded-lg border border-slate-50 p-2 sm:p-3 hover:bg-slate-50 transition-colors">
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+              <div className="h-3 w-3 rounded-full bg-amber-400 flex-shrink-0" />
+              <span className="text-xs sm:text-sm font-medium text-slate-600 truncate">Low Warning</span>
             </div>
-            <span className="text-sm font-bold text-slate-900">{warningCount} Units</span>
+            <span className="text-xs sm:text-sm font-bold text-slate-900 flex-shrink-0">{warningCount}</span>
           </div>
 
-          <div className="flex items-center justify-between gap-8 rounded-lg border border-slate-50 p-3 hover:bg-slate-50 transition-colors">
-            <div className="flex items-center gap-3">
-              <div className="h-3 w-3 rounded-full bg-rose-500" />
-              <span className="text-sm font-medium text-slate-600">Critical Low</span>
+          <div className="flex items-center justify-between gap-2 sm:gap-8 rounded-lg border border-slate-50 p-2 sm:p-3 hover:bg-slate-50 transition-colors">
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+              <div className="h-3 w-3 rounded-full bg-rose-500 flex-shrink-0" />
+              <span className="text-xs sm:text-sm font-medium text-slate-600 truncate">Critical Low</span>
             </div>
-            <span className="text-sm font-bold text-slate-900">{criticalCount} Units</span>
+            <span className="text-xs sm:text-sm font-bold text-slate-900 flex-shrink-0">{criticalCount}</span>
           </div>
         </div>
       </div>

@@ -2,6 +2,8 @@ import { useNavigate } from "react-router-dom"
 import { useContext, useEffect, useState } from "react"
 import PetHeader from "../components/petProfile/PetHeader"
 import PetProfileCard from "../components/petProfile/PetProfileCard"
+import Sidebar from "../components/layout/Sidebar"
+import Topbar from "../components/dashboard/Topbar"
 import { AuthContext } from "../context/AuthContext"
 
 const decodeToken = (token) => {
@@ -351,32 +353,46 @@ const PetProfile = () => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <PetHeader />
+    <div className="flex min-h-screen bg-slate-50">
+      {/* Sidebar oculto en móvil */}
+      <div className="hidden md:block">
+        <Sidebar />
+      </div>
 
-      <main className="max-w-[1200px] mx-auto px-6 py-8">
-        <div className="flex justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-black">Perfil de Mascotas</h1>
-            <p className="text-slate-500 font-medium">
-              Revisa y edita la informacion de tus mascotas registradas.
-            </p>
-          </div>
+      <main className="flex-1 overflow-y-auto flex flex-col w-full">
+        {/* Topbar con hamburguesa */}
+        <Topbar />
 
-          <button onClick={() => navigate('/registerPet')} className="h-12 px-6 bg-blue-600 text-white rounded-xl font-bold shadow-lg hover:bg-blue-700">
-            + Agregar mascota
-          </button>
+        {/* PetHeader */}
+        <div className="hidden md:block">
+          <PetHeader />
         </div>
+
+        {/* Contenido principal adaptativo */}
+        <div className="p-4 sm:p-6 lg:p-8 flex-1 overflow-y-auto">
+          <div className="max-w-[1200px] mx-auto">
+            <div className="flex flex-col sm:flex-row sm:justify-between gap-3 sm:gap-4 mb-6 sm:mb-8">
+              <div className="min-w-0 flex-1">
+                <h1 className="text-2xl sm:text-3xl font-black">Perfil de Mascotas</h1>
+                <p className="text-slate-500 font-medium text-xs sm:text-base">
+                  Revisa y edita la informacion de tus mascotas registradas.
+                </p>
+              </div>
+
+              <button onClick={() => navigate('/registerPet')} className="h-10 sm:h-12 px-4 sm:px-6 bg-blue-600 text-white rounded-xl font-bold shadow-lg hover:bg-blue-700 text-xs sm:text-base whitespace-nowrap flex-shrink-0">
+                + Agregar mascota
+              </button>
+            </div>
 
      
 
-        {error && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
-            {error}
-          </div>
-        )}
+            {error && (
+              <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-600 text-xs sm:text-sm">
+                {error}
+              </div>
+            )}
 
-        <div className="grid lg:grid-cols-2 gap-8 mb-12">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 mb-8 sm:mb-12">
           {pets.map((pet) => {
             const petProgress = progressByPet[pet._id] || {
               consumed: 0,
@@ -412,104 +428,105 @@ const PetProfile = () => {
               />
             )
           })}
-        </div>
+            </div>
 
-        {editingPet && (
-          <div className="fixed inset-0 bg-slate-900/40 flex items-center justify-center px-4 z-50">
-            <div className="bg-white w-full max-w-md rounded-2xl shadow-xl border p-6">
-              <div className="flex items-start justify-between mb-4">
-                <div>
-                  <h2 className="text-xl font-extrabold text-slate-900">Editar mascota</h2>
-                  <p className="text-sm text-slate-500">Actualiza nombre, peso y foto.</p>
-                </div>
-                <button
-                  type="button"
-                  onClick={handleCloseEdit}
-                  className="text-slate-400 hover:text-slate-600"
-                >
-                  ✕
-                </button>
-              </div>
+            {editingPet && (
+              <div className="fixed inset-0 bg-slate-900/40 flex items-center justify-center px-4 z-50">
+                <div className="bg-white w-full max-w-md rounded-2xl shadow-xl border p-4 sm:p-6">
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex-1 min-w-0">
+                      <h2 className="text-lg sm:text-xl font-extrabold text-slate-900">Editar mascota</h2>
+                      <p className="text-xs sm:text-sm text-slate-500">Actualiza nombre, peso y foto.</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleCloseEdit}
+                      className="text-slate-400 hover:text-slate-600 flex-shrink-0 ml-2"
+                    >
+                      ✕
+                    </button>
+                  </div>
 
-              <div className="space-y-4">
-                <div>
-                  <label className="text-xs font-bold text-slate-500">Nombre</label>
-                  <input
-                    name="name"
-                    value={editForm.name}
-                    onChange={handleEditChange}
-                    className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm"
-                    placeholder="Nombre"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-xs font-bold text-slate-500">Peso (kg)</label>
-                  <input
-                    name="weight"
-                    value={editForm.weight}
-                    onChange={handleEditChange}
-                    className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm"
-                    placeholder="0.0"
-                    type="number"
-                    min="0"
-                    step="0.1"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-xs font-bold text-slate-500">Foto</label>
-                  <div
-                    onDragOver={(event) => event.preventDefault()}
-                    onDrop={handleDropImage}
-                    className="mt-1 flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-slate-200 px-4 py-6 text-sm text-slate-500"
-                  >
-                    {editImagePreview || editForm.profileImage ? (
-                      <img
-                        src={editImagePreview || editForm.profileImage}
-                        alt="Preview"
-                        className="h-28 w-28 rounded-full object-cover"
-                      />
-                    ) : (
-                      <span>Arrastra una imagen aqui</span>
-                    )}
-
-                    <label className="text-xs font-bold text-blue-600 cursor-pointer">
-                      Seleccionar archivo
+                  <div className="space-y-3 sm:space-y-4">
+                    <div>
+                      <label className="text-xs font-bold text-slate-500">Nombre</label>
                       <input
-                        type="file"
-                        accept="image/*"
-                        onChange={(event) => handleImageFile(event.target.files[0])}
-                        className="hidden"
+                        name="name"
+                        value={editForm.name}
+                        onChange={handleEditChange}
+                        className="mt-1 w-full rounded-xl border border-slate-200 px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm"
+                        placeholder="Nombre"
                       />
-                    </label>
+                    </div>
+
+                    <div>
+                      <label className="text-xs font-bold text-slate-500">Peso (kg)</label>
+                      <input
+                        name="weight"
+                        value={editForm.weight}
+                        onChange={handleEditChange}
+                        className="mt-1 w-full rounded-xl border border-slate-200 px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm"
+                        placeholder="0.0"
+                        type="number"
+                        min="0"
+                        step="0.1"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-xs font-bold text-slate-500">Foto</label>
+                      <div
+                        onDragOver={(event) => event.preventDefault()}
+                        onDrop={handleDropImage}
+                        className="mt-1 flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-slate-200 px-3 py-4 sm:px-4 sm:py-6 text-xs sm:text-sm text-slate-500"
+                      >
+                        {editImagePreview || editForm.profileImage ? (
+                          <img
+                            src={editImagePreview || editForm.profileImage}
+                            alt="Preview"
+                            className="h-20 w-20 sm:h-28 sm:w-28 rounded-full object-cover"
+                          />
+                        ) : (
+                          <span>Arrastra una imagen aqui</span>
+                        )}
+
+                        <label className="text-xs font-bold text-blue-600 cursor-pointer">
+                          Seleccionar archivo
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={(event) => handleImageFile(event.target.files[0])}
+                            className="hidden"
+                          />
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 sm:mt-6 flex gap-2 sm:gap-3 justify-end">
+                    <button
+                      type="button"
+                      onClick={handleCloseEdit}
+                      className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl border text-xs sm:text-sm font-bold text-slate-600"
+                      disabled={isSaving}
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleSaveEdit}
+                      className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl bg-blue-600 text-white text-xs sm:text-sm font-bold disabled:bg-blue-300"
+                      disabled={isSaving}
+                    >
+                      {isSaving ? "Guardando..." : "Guardar"}
+                    </button>
                   </div>
                 </div>
               </div>
+            )}
 
-              <div className="mt-6 flex gap-3 justify-end">
-                <button
-                  type="button"
-                  onClick={handleCloseEdit}
-                  className="px-4 py-2 rounded-xl border text-sm font-bold text-slate-600"
-                  disabled={isSaving}
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="button"
-                  onClick={handleSaveEdit}
-                  className="px-4 py-2 rounded-xl bg-blue-600 text-white text-sm font-bold disabled:bg-blue-300"
-                  disabled={isSaving}
-                >
-                  {isSaving ? "Guardando..." : "Guardar"}
-                </button>
-              </div>
-            </div>
           </div>
-        )}
-
-    
+        </div>
       </main>
     </div>
   )

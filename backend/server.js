@@ -23,6 +23,14 @@ connectDB();
 connectCloudinary();
 
 app.use(express.json());//request parsed to json
+
+// CORS configurado para permitir todas las IPs (desarrollo y producción)
+// app.use(cors({
+//   origin: '*',
+//   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+//   allowedHeaders: ['Content-Type', 'Authorization'],
+//   credentials: true
+// }));
 app.use(cors());
 
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));

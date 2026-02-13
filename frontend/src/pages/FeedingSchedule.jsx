@@ -3,6 +3,7 @@ import { useContext, useEffect, useMemo, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { toast } from "react-toastify"
 import Sidebar from "../components/layout/Sidebar"
+import Topbar from "../components/dashboard/Topbar"
 import FeedingSummary from "../components/feeding/FeedingSummary"
 import InstantFeed from "../components/feeding/InstantFeed"
 import MealCard from "../components/feeding/MealCard"
@@ -306,83 +307,94 @@ const FeedingSchedulePage = () => {
   const displaySchedules = loading || schedules.length === 0 ? defaultScheduleSlots : schedules
   
   return (
-    <div className="flex h-screen overflow-hidden bg-white">
-      <Sidebar />
+    <div className="flex min-h-screen bg-white">
+      {/* Sidebar oculto en móvil */}
+      <div className="hidden md:block">
+        <Sidebar />
+      </div>
 
-      <main className="flex-1 overflow-y-auto p-8">
-        <div className="max-w-6xl mx-auto space-y-8">
-          <header className="flex items-start justify-between">
-            <div>
-              <p className="text-blue-600 text-sm font-bold uppercase">
-                Active Plan: High Protein Diet
-              </p>
-              <h3 className="text-4xl font-extrabold">
-                Max's Feeding Plan
-              </h3>
-              <p className="text-slate-500">
-                Adjust portions and timing for your Golden Retriever
-              </p>
-              {dispenserStatus && (
-                <div className="mt-3 text-sm space-y-1">
-                  <p className={`font-semibold ${dispensing ? 'text-green-600' : 'text-slate-600'}`}>
-                    {dispensing ? 'Dispensador activo' : 'Dispensador inactivo'}
-                  </p>
-                  <p className="text-slate-500">
-                    Peso actual: {dispenserStatus.pesoComida || 0}g
-                  </p>
-                </div>
-              )}
+      <main className="flex-1 overflow-y-auto flex flex-col w-full">
+        {/* Topbar con hamburguesa */}
+        <Topbar />
+
+        <div className="p-4 sm:p-6 lg:p-8 flex-1 overflow-y-auto">
+          <div className="max-w-6xl mx-auto space-y-4 sm:space-y-6 lg:space-y-8">
+            {/* Header adaptativo */}
+            <header className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+              <div className="flex-1 min-w-0">
+                <p className="text-blue-600 text-xs sm:text-sm font-bold uppercase">
+                  Active Plan: High Protein Diet
+                </p>
+                <h3 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold mt-1">
+                  Max's Feeding Plan
+                </h3>
+                <p className="text-slate-500 text-sm mt-1">
+                  Adjust portions and timing for your Golden Retriever
+                </p>
+                {dispenserStatus && (
+                  <div className="mt-2 text-xs sm:text-sm space-y-1">
+                    <p className={`font-semibold ${dispensing ? 'text-green-600' : 'text-slate-600'}`}>
+                      {dispensing ? 'Dispensador activo' : 'Dispensador inactivo'}
+                    </p>
+                    <p className="text-slate-500">
+                      Peso actual: {dispenserStatus.pesoComida || 0}g
+                    </p>
+                  </div>
+                )}
+              </div>
+              <button 
+                onClick={handleLogout}
+                className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-red-50 text-slate-600 hover:text-red-600 transition-colors flex-shrink-0"
+                title="Cerrar sesión"
+              >
+                <LogOut className="h-5 w-5" />
+                <span className="text-sm font-medium">Cerrar</span>
+              </button>
+            </header>
+
+            {error && (
+              <div className="bg-rose-50 border border-rose-200 text-rose-600 rounded-xl p-3 sm:p-4 text-xs sm:text-sm">
+                {error}
+              </div>
+            )}
+
+            {/* Componentes alimentación */}
+            <FeedingSummary
+              dailyTargetGrams={dailyTargetGrams}
+              scheduledGrams={scheduledGrams}
+              remainingGrams={remainingGrams}
+            />
+            <InstantFeed
+              value={instantGrams}
+              onValueChange={setInstantGrams}
+              onFeedNow={handleInstantFeed}
+              isLoading={instantLoading}
+            />
+
+            {/* Grid adaptativo: 1 col móvil, 2 desktop */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
+              {displaySchedules.map((schedule, index) => (
+                <MealCard
+                  key={schedule._id || schedule.key}
+                  title={schedule.title}
+                  icon={schedule.icon}
+                  color={schedule.color}
+                  time={schedule.time}
+                  portion={schedule.portionGrams}
+                  min={schedule.min}
+                  max={schedule.max}
+                  days={(schedule.days || []).map((day) => day.slice(0, 1).toUpperCase())}
+                  isActive={schedule.isActive !== false}
+                  onTimeChange={(value) => updateScheduleField(index, "time", value)}
+                  onPortionChange={(value) => updateScheduleField(index, "portionGrams", value)}
+                  onSave={() => handleSaveSchedule(schedule, index)}
+                  isSaving={savingId === (schedule._id || schedule.key || String(index))}
+                  onDelete={() => confirmDeleteSchedule(schedule, index)}
+                  canDelete={Boolean(schedule._id)}
+                  isDeleting={deletingId === (schedule._id || schedule.key || String(index))}
+                />
+              ))}
             </div>
-            <button 
-              onClick={handleLogout}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-red-50 text-slate-600 hover:text-red-600 transition-colors"
-              title="Cerrar sesión"
-            >
-              <LogOut className="h-5 w-5" />
-              <span className="text-sm font-medium">Cerrar Sesion</span>
-            </button>
-          </header>
-
-          {error && (
-            <div className="bg-rose-50 border border-rose-200 text-rose-600 rounded-xl p-4 text-sm">
-              {error}
-            </div>
-          )}
-
-          <FeedingSummary
-            dailyTargetGrams={dailyTargetGrams}
-            scheduledGrams={scheduledGrams}
-            remainingGrams={remainingGrams}
-          />
-          <InstantFeed
-            value={instantGrams}
-            onValueChange={setInstantGrams}
-            onFeedNow={handleInstantFeed}
-            isLoading={instantLoading}
-          />
-
-          <div className="grid xl:grid-cols-2 gap-8">
-            {displaySchedules.map((schedule, index) => (
-              <MealCard
-                key={schedule._id || schedule.key}
-                title={schedule.title}
-                icon={schedule.icon}
-                color={schedule.color}
-                time={schedule.time}
-                portion={schedule.portionGrams}
-                min={schedule.min}
-                max={schedule.max}
-                days={(schedule.days || []).map((day) => day.slice(0, 1).toUpperCase())}
-                isActive={schedule.isActive !== false}
-                onTimeChange={(value) => updateScheduleField(index, "time", value)}
-                onPortionChange={(value) => updateScheduleField(index, "portionGrams", value)}
-                onSave={() => handleSaveSchedule(schedule, index)}
-                isSaving={savingId === (schedule._id || schedule.key || String(index))}
-                onDelete={() => confirmDeleteSchedule(schedule, index)}
-                canDelete={Boolean(schedule._id)}
-                isDeleting={deletingId === (schedule._id || schedule.key || String(index))}
-              />
-            ))}
           </div>
         </div>
       </main>

@@ -12,7 +12,7 @@ const Sidebar = () => {
   const location = useLocation()
 
   return (
-    <aside className="w-64 border-r border-slate-100 bg-slate-50 h-screen sticky top-0">
+    <aside className="hidden md:flex w-64 border-r border-slate-100 bg-slate-50 h-screen sticky top-0 flex-col">
       <div className="p-6 flex flex-col justify-between h-full">
 
         <div className="space-y-8">

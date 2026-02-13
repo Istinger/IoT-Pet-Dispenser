@@ -108,16 +108,19 @@ const Menu= () => {
   }, [])
 
   return (
- <div className="flex min-h-screen bg-white">
-      <Sidebar />
+    <div className="flex min-h-screen bg-white">
+      {/* Sidebar oculto en móvil, visible desde md */}
+      <div className="hidden md:block">
+        <Sidebar />
+      </div>
 
-      <main className="flex-1 flex flex-col min-w-0">
+      <main className="flex-1 flex flex-col min-w-0 w-full">
         <Topbar />
 
-        <div className="p-8 max-w-7xl mx-auto w-full space-y-8">
-        
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Contenedor adaptativo: p-4 móvil, p-6 tablet, p-8 desktop */}
+        <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full space-y-4 sm:space-y-6 lg:space-y-8">
+          {/* Grid adaptativo: 1 col móvil, 2 tablet, 3 desktop */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-6">
             <HopperCard
               capacityGrams={HOPPER_CAPACITY_GRAMS}
               servingGrams={SERVING_GRAMS}
@@ -130,7 +133,8 @@ const Menu= () => {
             />
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Tabla adaptativa */}
+          <div className="w-full">
             <ActivityTable logs={logs} />
           </div>
         </div>

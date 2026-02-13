@@ -23,7 +23,7 @@ const decodeToken = (token) => {
     }
 }
 
-const dogBreedRegex = /^(?:Chihuahua|Pomerania|Shih Tzu|Yorkshire Terrier|Malt[eé]s|Bich[oó]n Fris[eé]|Bich[oó]n Frise|Pekin[eé]s|Beagle|Cocker Spaniel|Bulldog Franc[eé]s|Schnauzer Miniatura|Boston Terrier|Pug|Labrador Retriever|Golden Retriever|Pastor Alem[aá]n|Rottweiler|Doberman|Boxer|D[aá]lmat[aá]|Border Collie|Pastor Australiano|Husky Siberiano|Akita Inu|San Bernardo|Mast[ií]n Espa[nñ]ol|Alaskan Malamute)$/i
+const dogBreedRegex = /^(?:Chihuahua|Pomerania|Shih Tzu|Yorkshire Terrier|Malt[eé]s|Bich[oó]n Fris[eé]|Bich[oó]n Frise|Pekin[eé]s|Beagle|Cocker Spaniel|Bulldog Franc[eé]s|Schnauzer Miniatura|Boston Terrier|Pug|Labrador Retriever|Golden Retriever|Pastor Alem[aá]n|Rottweiler|Doberman|Boxer|D[aá]lmat[aá]|Border Collie|Pastor Australiano|Husky Siberiano|Akita Inu|San Bernardo|Mast[ií]n Espa[nñ]ol|Alaskan Malamute|Salchicha|Teckel|Labrador|Pastor|Beagle|Akita|French Puddle|Cocker|Husky|Schnauzer)$/i
 
 const PetForm = () => {
     const navigate = useNavigate()
@@ -145,7 +145,7 @@ const PetForm = () => {
             }
 
             if (data.success) {
-                console.log('✅ Mascota guardada exitosamente:', data.pet)
+                console.log('Mascota guardada exitosamente:', data.pet)
                 navigate('/menu')
             } else {
                 setError(data.message || 'Error al guardar la mascota')

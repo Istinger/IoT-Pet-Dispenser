@@ -72,27 +72,27 @@ const PeakHoursCard = ({ bars }) => {
   }
 
   return (
-    <div className="rounded-xl border border-slate-100 bg-white p-6 shadow-sm">
-      <div className="mb-6 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600">
+    <div className="rounded-xl border border-slate-100 bg-white p-4 sm:p-6 shadow-sm">
+      <div className="mb-4 sm:mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 flex-shrink-0">
             <span className="material-symbols-outlined">schedule</span>
           </div>
-          <div>
-            <h3 className="font-bold text-slate-900">Feeding Peak Hours</h3>
+          <div className="min-w-0 flex-1">
+            <h3 className="font-bold text-slate-900 text-sm sm:text-base truncate">Feeding Peak Hours</h3>
             <p className="text-xs text-slate-400">Dispenser Activation Load</p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-shrink-0">
           <button
             onClick={handleExport}
-            className="rounded-full border border-slate-200 px-3 py-1 text-[10px] font-bold text-slate-600 hover:bg-slate-50 disabled:opacity-50"
+            className="rounded-full border border-slate-200 px-2 sm:px-3 py-1 text-[10px] font-bold text-slate-600 hover:bg-slate-50 disabled:opacity-50 whitespace-nowrap"
             disabled={!bars || bars.length === 0}
           >
             Descargar PDF
           </button>
-          <div className="flex items-center gap-1.5 rounded-full bg-slate-100 px-2 py-1">
+          <div className="flex items-center gap-1.5 rounded-full bg-slate-100 px-2 py-1 flex-shrink-0">
             <div className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />
             <span className="text-[10px] font-bold text-slate-600">LIVE</span>
           </div>

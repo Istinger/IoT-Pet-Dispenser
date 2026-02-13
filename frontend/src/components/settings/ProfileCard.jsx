@@ -61,26 +61,26 @@ const ProfileCard = () => {
   }, [token])
 
   return (
-    <div className="bg-white p-8 rounded-2xl shadow-sm border">
-      <div className="flex items-center gap-6 mb-8">
-        <div className="relative">
+    <div className="bg-white p-4 sm:p-6 lg:p-8 rounded-2xl shadow-sm border">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6 mb-6 sm:mb-8">
+        <div className="relative flex-shrink-0">
           <img
             src="https://lh3.googleusercontent.com/aida-public/AB6AXuCBVP7Wr5kH-IZlHLN4Kao5AzmG43E63tqlsgmmswxv4_Ky6TXI2WhJ8ovaM7xrr98mEEt6CockvnVzQ5AMfmDpzkQa1A83M7CrK8Y20WMM9MlsdVdpwpw6mV3MHTCl0wgzPtCEc6mdaf3KOeesqSF8OqnDSULoNx4ggliXkh8Bs1bKtF-FdC9duTIS-JpwSZWMaAjtVPm663i__GwkUE0w8cpELHBSalfWTUy4i1dldM757OcaGEr8Y0BJLCqTMBK8TzxUgve5LkXg"
-            className="w-20 h-20 rounded-full border object-cover"
+            className="w-16 h-16 sm:w-20 sm:h-20 rounded-full border object-cover"
           />
-          <button className="absolute bottom-0 right-0 p-1.5 bg-white border rounded-full">
-            <Camera className="h-4 w-4" />
+          <button className="absolute bottom-0 right-0 p-1 sm:p-1.5 bg-white border rounded-full">
+            <Camera className="h-3 w-3 sm:h-4 sm:w-4" />
           </button>
         </div>
 
-        <div>
-          <h3 className="font-bold text-lg">{user?.name || "-"}</h3>
-          <p className="text-sm text-slate-500">Premium Plan Member</p>
+        <div className="flex-1 min-w-0">
+          <h3 className="font-bold text-lg sm:text-xl truncate">{user?.name || "-"}</h3>
+          <p className="text-xs sm:text-sm text-slate-500">Premium Plan Member</p>
         </div>
       </div>
 
       {error && (
-        <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-600">
+        <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs sm:text-sm text-red-600">
           {error}
         </div>
       )}
@@ -98,13 +98,13 @@ const ProfileCard = () => {
 }
 
 const Input = ({ label, icon: Icon, ...props }) => (
-  <div className="mb-4">
-    <label className="block text-sm font-semibold mb-1.5">{label}</label>
+  <div className="mb-3 sm:mb-4">
+    <label className="block text-xs sm:text-sm font-semibold mb-1 sm:mb-1.5">{label}</label>
     <div className="relative">
-      <Icon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+      <Icon className="absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 h-3 w-3 sm:h-4 sm:w-4 text-slate-400" />
       <input
         {...props}
-        className="w-full pl-10 py-2.5 rounded-xl bg-slate-50 border focus:ring-blue-600 focus:border-blue-600 text-sm"
+        className="w-full pl-8 sm:pl-10 py-2 sm:py-2.5 rounded-xl bg-slate-50 border focus:ring-blue-600 focus:border-blue-600 text-xs sm:text-sm"
       />
     </div>
   </div>
